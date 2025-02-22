@@ -12,7 +12,7 @@ from sqlmodel import select
 #TODO: Написать адекватные описания для функций, вместе с типизацией
 
 
-async def handle_message(message: dict):
+async def handle_message(message: dict) -> dict:
 
     if message["text"].startswith("."):
         logger.info(f"Received message: {message}")
