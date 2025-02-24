@@ -4,10 +4,12 @@
 from typing import List
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
 from .base import BaseCommand
-from triada.api.db_api import engine, Battles
-#from triada.api.db_api import get_battle, get_user
+from triada.api.db_api import engine
+from triada.schemas.models import Battles
+#from triada.main import get_battle, get_user
 #TODO: Разобраться с запросами к базе данных
 from sqlmodel import Session, select, text
+from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 
 
 JUDGE_COMMANDS = [

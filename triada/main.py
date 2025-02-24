@@ -7,6 +7,25 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 from triada.config.logg import logger
 import httpx
+from sqlmodel import Session, select
+from triada.schemas.models import Battles, Users
+
+
+def get_battle(session: Session, link: int = None, judge_id: int = None, status: str = None):
+    if isinstance(link, int):
+        print(link)
+        return session.get(Battles, link)
+    if isinstance(judge_id, int):
+        return session.exec(select(Battles).where(Battles.judge_id == judge_id)).all()
+    elif isinstance(status, str):
+        return session.exec(select(Battles).where(Battles.status == status)).all()
+    else:
+        return session.exec(select(Battles)).all()
+
+
+def get_user(session: Session, user_id: int):
+    return session.get(Users, user_id)
+
 
 app = FastAPI()
 
@@ -39,24 +58,3 @@ async def callback(data: dict):
         await handle_reply(data["object"])
 
     return PlainTextResponse("ok")
-
-if __name__ == "__main__":
-     def send_confirm_code(confirm_code: str):
-        """
-        Отправляет сообщение через группу ВК
-
-        Args:
-            peer_id: ID получателя
-            text: текст сообщения
-            attachments: список вложений
-
-        Returns:
-            json: ответ от ВК
-        """
-        with httpx.Client() as client:
-            response = client.post('https://buoyantly-endorsed-linnet.cloudpub.ru/new_confirm_code',
-                                         params={"confirm_code": confirm_code})
-
-        return response.json()
-
-     send_confirm_code('6880bc81')

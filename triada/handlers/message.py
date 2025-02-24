@@ -1,13 +1,14 @@
 from triada.config.settings import GROUP_ID, JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.api.vk_api import send_message
 from fastapi.responses import PlainTextResponse
-from triada.utils.patterns import BATTLE_PLAYERS_PATTERN, MESSAGE_PATTERN
+from triada.utils.patterns import MESSAGE_PATTERN
 from triada.config.logg import logger
 from triada.commands.judje_commands import VerdictCommand, CloseCommand, OpenCommand, PauseCommand, RePauseCommand, \
     ExtendCommand, SuspectsCommand, HelloCommand
 from typing import Optional, Tuple
-from triada.api.db_api import engine, Session, BattlesPlayers, Battles, Users
-from sqlmodel import select
+from triada.api.db_api import engine
+from sqlmodel import select, Session
+from triada.schemas.models import Battles, BattlesPlayers, Users
 
 #TODO: Написать адекватные описания для функций, вместе с типизацией
 

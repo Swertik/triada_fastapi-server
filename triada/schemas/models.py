@@ -1,15 +1,15 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from sqlmodel import SQLModel
-
+from sqlmodel import SQLModel, Field
+from triada.config.settings import DATABASE_URL
 
 class Message(BaseModel):
     id: int
     text: str
     peer_id: int
     from_id: int
-    attachments: Optional[List[dict]] = []
+    attachments: Optional[List[dict]] = Field(default=None)
     date: datetime
 
 
@@ -22,7 +22,7 @@ class BattleCreate(BaseModel):
 class Battles(SQLModel, table=True):
     __tablename__ = "battles"
 
-    link: int = Field(default=None, primary_key=True)
+    link: int = Field(primary_key=True)
     date: datetime = Field(default=datetime.now())
     status: str = Field(default="active")
     judge_id: int
