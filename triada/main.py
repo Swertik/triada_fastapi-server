@@ -6,8 +6,10 @@ from triada.handlers.reply import handle_reply
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 from triada.config.logg import logger
+import httpx
 
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
@@ -15,6 +17,7 @@ async def root():
 
 @app.post("/new_confirm_code")
 def new_confirm_code(confirm_code: str):
+    global CONFIRM_CODE
     CONFIRM_CODE = confirm_code
 
 
@@ -36,3 +39,24 @@ async def callback(data: dict):
         await handle_reply(data["object"])
 
     return PlainTextResponse("ok")
+
+if __name__ == "__main__":
+     def send_confirm_code(confirm_code: str):
+        """
+        Отправляет сообщение через группу ВК
+
+        Args:
+            peer_id: ID получателя
+            text: текст сообщения
+            attachments: список вложений
+
+        Returns:
+            json: ответ от ВК
+        """
+        with httpx.Client() as client:
+            response = client.post('https://buoyantly-endorsed-linnet.cloudpub.ru/new_confirm_code',
+                                         params={"confirm_code": confirm_code})
+
+        return response.json()
+
+     send_confirm_code('6880bc81')
