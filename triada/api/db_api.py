@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, create_engine, Session, Field, select
 from triada.config.settings import DATABASE_URL
 from datetime import datetime
 
+
 engine = create_engine(DATABASE_URL, echo=True)  # echo=True для отладки SQL-запросов
 
 

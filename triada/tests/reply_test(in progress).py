@@ -5,6 +5,7 @@
 # import asyncio
 # import httpx
 
+
 # @pytest.mark.asyncio
 # async def reply_test(reply: dict, called: bool = True):
 #     # Создаем мок для httpx.AsyncClient

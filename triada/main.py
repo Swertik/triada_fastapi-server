@@ -9,10 +9,13 @@ from triada.config.logg import logger
 
 app = FastAPI()
 
-
 @app.get("/")
 async def root():
     return PlainTextResponse("Hello World!")
+
+@app.post("/new_confirm_code")
+def new_confirm_code(confirm_code: str):
+    CONFIRM_CODE = confirm_code
 
 
 @app.post("/callback")
