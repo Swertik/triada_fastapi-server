@@ -6,9 +6,9 @@ from triada.config.logg import logger
 from triada.commands.judje_commands import VerdictCommand, CloseCommand, OpenCommand, PauseCommand, RePauseCommand, \
     ExtendCommand, SuspectsCommand, HelloCommand
 from typing import Optional, Tuple
-from triada.api.db_api import engine
 from sqlmodel import select, Session
 from triada.schemas.models import Battles, BattlesPlayers, Users
+from triada.api.db_api import get_sessionmaker
 
 #TODO: Написать адекватные описания для функций, вместе с типизацией
 
@@ -48,7 +48,7 @@ async def handle_battle_commands(command: str, link: int, text: str, message: di
     Обрабатывает команды, связанные с боями
     """
     commands = {
-        'вердикт': lambda: VerdictCommand(link, text, message['peer_id'], message.get('attachments', [])),
+        'вердикт': lambda: VerdictCommand(link, text, message['peer_id']), #TODO: Добавить обработчик вложений
         'закрыть': lambda: CloseCommand(link, text, message['peer_id']),
         'открыть': lambda: OpenCommand(link, text, message['peer_id']),
         'пауза': lambda: PauseCommand(link, text, message['peer_id']),
@@ -84,7 +84,8 @@ async def parse_message(msg: dict) -> Optional[Tuple[str, str, str]]:
 async def handle_user_commands(command: str, text: str, msg: dict) -> None:
     match command:
         case 'мои бои':
-            with Session(engine) as session:
+            async_session = get_sessionmaker()
+            async with async_session() as session:
                 query = select(BattlesPlayers).where(BattlesPlayers.user_id == msg['from_id'])
                 link = session.exec(query).all()
                 if not link:
@@ -94,7 +95,8 @@ async def handle_user_commands(command: str, text: str, msg: dict) -> None:
                 await send_message(msg['peer_id'], text)
 
         case 'бои':
-            with Session(engine) as session:
+            async_session = get_sessionmaker()
+            async with async_session() as session:
                 query = select(Battles).where(Battles.status == 'active')
                 link = session.exec(query).all()
                 if not link:
@@ -109,7 +111,8 @@ async def handle_user_commands(command: str, text: str, msg: dict) -> None:
             await send_message(msg['peer_id'], text)
 
         case 'моя стата':
-            with Session(engine) as session:
+            async_session = get_sessionmaker()
+            async with async_session() as session:
                 query = select(Users).where(Users.user_id == msg['from_id'])
                 user = session.exec(query).first()
                 if not user:

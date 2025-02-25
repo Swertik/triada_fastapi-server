@@ -20,4 +20,6 @@ triada/config/logg.py
 triada/config/settings.py
 triada/config/vk_types.py
 triada/utils/__init__.py
+triada/utils/cache.py
+triada/utils/exceptions.py
 triada/utils/patterns.py

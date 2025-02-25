@@ -24,7 +24,7 @@ Requires-Dist: idna==3.10
 Requires-Dist: iniconfig==2.0.0
 Requires-Dist: packaging==24.2
 Requires-Dist: pluggy==1.5.0
-Requires-Dist: psycopg2==2.9.10
+Requires-Dist: psycopg2-binary==2.9.10
 Requires-Dist: pydantic==2.10.6
 Requires-Dist: pydantic_core==2.27.2
 Requires-Dist: pytest==8.3.4
@@ -38,6 +38,7 @@ Requires-Dist: sqlmodel==0.0.22
 Requires-Dist: psycopg-binary==3.2.4
 Requires-Dist: dotenv==0.9.9
 Requires-Dist: python-dotenv==1.0.1
+Requires-Dist: SQLAlchemy==2.0.38
 Dynamic: author
 Dynamic: author-email
 Dynamic: classifier
@@ -48,4 +49,4 @@ Dynamic: requires-dist
 Dynamic: requires-python
 Dynamic: summary
 
-# Triada-FastApi
+# triada_fastapi-server
