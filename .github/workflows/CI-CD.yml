@@ -36,10 +36,10 @@ jobs:
     
     - name: Run tests
       env:
-        GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
-        MY_TOKEN=${{ secrets.MY_TOKEN }}
-        DATABASE_TOKEN=${{ vars.DATABASE_TOKEN }}
-        TEST_DATABASE_TOKEN=${{ vars.DATABASE_TOKEN }}
+        GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
+        MY_TOKEN: ${{ secrets.MY_TOKEN }}
+        DATABASE_TOKEN: ${{ vars.DATABASE_TOKEN }}
+        TEST_DATABASE_TOKEN: ${{ vars.DATABASE_TOKEN }}
       run: pytest
 
   deploy:
