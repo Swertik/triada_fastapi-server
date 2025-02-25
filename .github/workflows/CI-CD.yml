@@ -8,7 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: .env
+    env:
+      GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
+      MY_TOKEN: ${{ secrets.MY_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
     - uses: actions/checkout@v4
 
@@ -18,11 +21,6 @@ jobs:
       with:
         python-version: "3.13"
 
-    - name: Распаковка JSON в .env
-      run: |
-        echo '${{ secrets.ENV_JSON }}' > env.json
-        cat env.json | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]' > .env
-
 
     - name: Install dependencies
       run: |
@@ -30,7 +28,7 @@ jobs:
         pip install pytest
         pip install -e .
     
-    - name: Run settings.py
+    - name: Run tests
       run: pytest
 
   deploy:
