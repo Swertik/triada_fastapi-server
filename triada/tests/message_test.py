@@ -58,7 +58,6 @@ class TestMessage:
 class TestMessageDB:
     @pytest.mark.asyncio
     async def test_pause(self, mock_vk_client, db_session):
-        new_battle = Battles()
         pause_calls = await message_test(
             {'text': '.пауза https://vk.com/wall-229144827_1',
              'peer_id': JUDGE_CHAT_ID,

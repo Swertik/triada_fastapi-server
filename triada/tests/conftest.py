@@ -1,10 +1,8 @@
 import pytest
 import pytest_asyncio
-from starlette.testclient import TestClient
 from triada.config.settings import TEST_DATABASE_URL
 from triada.main import app
 from triada.api.db_api import override_database, get_engine, get_sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel
 
 
