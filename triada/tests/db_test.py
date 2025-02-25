@@ -8,7 +8,7 @@ from sqlmodel import SQLModel
 
 
 @pytest.mark.asyncio
-async def test_create_user(db_session, setup_test_db):
+async def test_create_user(db_session):
     """Тест создания пользователя в тестовой БД"""
     SQLModel.metadata.create_all
     # Создаём нового пользователя
