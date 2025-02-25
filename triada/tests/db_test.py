@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from triada.schemas.models import Users  # Импортируем модель
@@ -6,6 +8,8 @@ from sqlalchemy.future import select
 
 @pytest.mark.asyncio
 async def test_create_user(db_session, setup_test_db):
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    TEST_DATABASE_URL = os.getenv('TEST_DATABASE_URL')
     """Тест создания пользователя в тестовой БД"""
 
     # Создаём нового пользователя
