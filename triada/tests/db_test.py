@@ -4,12 +4,13 @@ import pytest
 
 from triada.schemas.models import Users  # Импортируем модель
 from sqlalchemy.future import select
+from sqlmodel import SQLModel
 
 
 @pytest.mark.asyncio
 async def test_create_user(db_session, setup_test_db):
     """Тест создания пользователя в тестовой БД"""
-
+    SQLModel.metadata.create_all
     # Создаём нового пользователя
     new_user = Users(user_id=5, user_name="Alice")
     db_session.add(new_user)

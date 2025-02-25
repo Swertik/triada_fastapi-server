@@ -3,8 +3,7 @@ import pytest_asyncio
 from triada.config.settings import TEST_DATABASE_URL
 from triada.main import app
 from triada.api.db_api import override_database, get_engine, get_sessionmaker
-from sqlmodel import SQLModel
-
+from triada.schemas.models import *
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_assertrepr_compare(op, left, right):
@@ -25,17 +24,19 @@ def pytest_assertrepr_compare(op, left, right):
 
 app.dependency_overrides = {}
 
-@pytest.fixture(scope="session", autouse=True)
-async def setup_test_db():
-    """Создает тестовую базу данных и таблицы"""
+
+@pytest.fixture(scope="function", autouse=True)
+async def clear_db():
     with override_database(TEST_DATABASE_URL):
         engine = get_engine()
         async with engine.begin() as conn:
-            await conn.run_sync(SQLModel.metadata.drop_all)  # Очищаем БД
-            await conn.run_sync(SQLModel.metadata.create_all)  # Создаем схему
-        yield
-        async with engine.begin() as conn:
-            await conn.run_sync(SQLModel.metadata.drop_all)  # Очищаем после тестов
+            await conn.run_sync(SQLModel.metadata.drop_all)  # Очистка перед тестами
+            await conn.run_sync(SQLModel.metadata.create_all)  # Пересоздание схемы
+        try:
+            yield  # Тут выполняются тесты
+        finally:
+            async with engine.begin() as conn:
+                await conn.run_sync(SQLModel.metadata.drop_all)  # Очистка после тестов
 
 
 @pytest_asyncio.fixture
