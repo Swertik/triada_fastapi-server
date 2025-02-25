@@ -22,14 +22,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create .env file
-      run: |
-        cat << EOF > .env
-        GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
-        MY_TOKEN=${{ secrets.MY_TOKEN }}
-        DATABASE_TOKEN="postgresql+asyncpg://test:test@localhost:5432/test"
-        TEST_DATABASE_TOKEN="postgresql+asyncpg://test:test@localhost:5432/test"
-          EOF
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
@@ -43,6 +35,11 @@ jobs:
         pip install -e .
     
     - name: Run tests
+      env:
+        GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
+        MY_TOKEN=${{ secrets.MY_TOKEN }}
+        DATABASE_TOKEN=${{ vars.DATABASE_TOKEN }}
+        TEST_DATABASE_TOKEN=${{ vars.DATABASE_TOKEN }}
       run: pytest
 
   deploy:
