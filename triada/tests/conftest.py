@@ -25,7 +25,7 @@ def pytest_assertrepr_compare(op, left, right):
 app.dependency_overrides = {}
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def clear_db():
     with override_database(TEST_DATABASE_URL):
         engine = get_engine()
