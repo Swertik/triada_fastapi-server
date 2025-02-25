@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from triada.config.settings import DATABASE_URL, TEST_DATABASE_URL
 from contextlib import contextmanager
 import threading
+import os
 
 # Используем thread-local storage для хранения текущего URL
 _db_context = threading.local()
@@ -12,7 +13,7 @@ _db_context.url = DATABASE_URL
 
 def get_db_url():
     """Возвращает текущий URL базы данных"""
-    return getattr(_db_context, 'url', DATABASE_URL)
+    return os.getenv("DATABASE_URL")
 
 @contextmanager
 def override_database(url: str):
