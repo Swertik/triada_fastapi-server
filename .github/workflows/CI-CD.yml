@@ -11,6 +11,7 @@ jobs:
     env:
       GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
       MY_TOKEN: ${{ secrets.MY_TOKEN }}
+      DATABASE_TOKEN: postgresql+asyncpg://test:test@localhost:5432/test
       TEST_DATABASE_TOKEN: postgresql+asyncpg://test:test@localhost:5432/test
     services:
       postgres:
