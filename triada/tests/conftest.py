@@ -39,6 +39,7 @@ async def setup_test_db():
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.drop_all)  # Очищаем после тестов
 
+
 @pytest_asyncio.fixture
 async def db_session():
     """Создаёт сессию БД для тестов и откатывает все изменения после каждого теста"""
