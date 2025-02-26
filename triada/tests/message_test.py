@@ -5,6 +5,7 @@ from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID
 from triada.api.db_api import get_sessionmaker
 from triada.schemas.models import Battles
+from sqlalchemy import select
 
 
 @pytest_asyncio.fixture
@@ -20,13 +21,6 @@ async def mock_vk_client():
 
 @pytest.mark.asyncio
 async def message_test(message: dict, called: bool = True, mock_vk_client = None):
-    if not mock_vk_client:
-        mock_response = AsyncMock()
-        mock_response.json.return_value = {"response": 1234567}
-        
-        mock_vk_client = AsyncMock()
-        mock_vk_client.__aenter__.return_value.post.return_value = mock_response
-
     with patch('httpx.AsyncClient', return_value=mock_vk_client):
         response = await handle_message(message)
 
@@ -37,6 +31,7 @@ async def message_test(message: dict, called: bool = True, mock_vk_client = None
     else:
         mock_vk_client.__aenter__.return_value.post.assert_not_called()
         return response
+
 
 class TestMessage:
     @pytest.mark.asyncio
@@ -58,6 +53,9 @@ class TestMessage:
 class TestMessageDB:
     @pytest.mark.asyncio
     async def test_pause(self, mock_vk_client, db_session):
+        new_battle = Battles(link=1, judge_id=1, time_out=1)
+        db_session.add(new_battle)
+        await db_session.commit()
         pause_calls = await message_test(
             {'text': '.пауза https://vk.com/wall-229144827_1',
              'peer_id': JUDGE_CHAT_ID,

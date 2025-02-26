@@ -81,7 +81,24 @@ async def parse_message(msg: dict) -> Optional[Tuple[str, str, str]]:
     return None
 
 
-async def handle_user_commands(command: str, text: str, msg: dict) -> None:
+async def handle_user_commands(command: str, text: str, message: dict) -> None:
+    # commands = {
+    #     'мои бои': lambda: MyBattlesCommand(link, text, message['peer_id']),  # TODO: Добавить обработчик вложений
+    #     'бои': lambda: BattlesCommand(link, text, message['peer_id']),
+    #     'команды': lambda: CommandsCommand(link, text, message['peer_id']),
+    #     'моя стата': lambda: MyStatCommand(link, text, message['peer_id']),
+    # }
+    #
+    # if command_creator := commands.get(command.lower()):
+    #     logger.info(f"Executing command: {command}")
+    #     try:
+    #         text = await command_creator().execute()
+    #         logger.debug(f"Command executed: {text}")
+    #         return
+    #     except Exception as e:
+    #         logger.error(f"Error executing command: {e}")
+    #         return
+
     match command:
         case 'мои бои':
             async_session = get_sessionmaker()

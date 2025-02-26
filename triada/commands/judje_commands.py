@@ -3,12 +3,12 @@
 """
 from typing import List
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
-from .base import BaseCommand, BaseDBCommand
+from triada.commands.base import BaseCommand, BaseDBCommand
 from triada.schemas.models import Battles
 #TODO: Разобраться с запросами к базе данных
 from sqlmodel import Session, select, text
-from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
-from triada.api.db_api import get_sessionmaker
+from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID, DATABASE_URL
+from triada.api.db_api import get_db_url
 
 JUDGE_COMMANDS = [
     "вердикт",
@@ -46,6 +46,7 @@ class OpenCommand(BaseCommand):
 
 class PauseCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
+
         battle = (await session.exec(select(Battles).where(Battles.link == self.link))).first()
         battle.status = 'paused'
         session.add(battle)

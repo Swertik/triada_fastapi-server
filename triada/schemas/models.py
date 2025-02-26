@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from sqlmodel import SQLModel, Field
-from triada.config.settings import DATABASE_URL
+
 
 class Message(BaseModel):
     id: int
@@ -12,11 +12,7 @@ class Message(BaseModel):
     attachments: Optional[List[dict]] = Field(default=None)
     date: datetime
 
-
-class BattleCreate(BaseModel):
-    link: int
-    judge_id: int
-    status: str = Field(default="active") 
+    model_config = ConfigDict(extra='forbid')
 
 
 class Battles(SQLModel, table=True):
@@ -28,6 +24,8 @@ class Battles(SQLModel, table=True):
     judge_id: int
     turn: int = Field(default=0)
     time_out: int
+
+    model_config = ConfigDict(extra='forbid')
 
 
 class Users(SQLModel, table=True):
@@ -44,6 +42,8 @@ class Users(SQLModel, table=True):
     skill_rating: int = Field(default=0)
     user_name: str
 
+    model_config = ConfigDict(extra='forbid')
+
 
 class BattlesPlayers(SQLModel, table=True):
     __tablename__ = "battles_players"
@@ -58,3 +58,5 @@ class BattlesPlayers(SQLModel, table=True):
     user_name: str
     hidden_action: str
     link: int
+
+    model_config = ConfigDict(extra='forbid')

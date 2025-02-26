@@ -49,5 +49,4 @@ async def db_session():
         async_session = get_sessionmaker()
         async with async_session() as session:
             yield session
-            await session.rollback()
             await session.close()
