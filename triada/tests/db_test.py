@@ -8,12 +8,8 @@ from sqlmodel import SQLModel
 
 
 @pytest.mark.asyncio
-async def test_create_user(db_session):
+async def test_create_user(db_session, clear_db):
     """Тест создания пользователя в тестовой БД"""
-    engine = db_session.bind
-    # Use run_sync on the engine to execute synchronous DDL
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
     # Создаём нового пользователя
     new_user = Users(user_id=5, user_name="Alice")
     db_session.add(new_user)
@@ -27,4 +23,3 @@ async def test_create_user(db_session):
     assert user is not None
     assert user.user_name == "Alice"
     assert user.user_id == 5
-

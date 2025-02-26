@@ -54,18 +54,18 @@ class TestMessage:
         assert vervict_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'текст вердикта', 'v': '5.199', 'attachment': None}), call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Комментарий в пост размещен!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
 
-# @pytest.mark.usefixtures('setup_test_db')
-# class TestMessageDB:
-#     @pytest.mark.asyncio
-#     async def test_pause(self, mock_vk_client, db_session):
-#         pause_calls = await message_test(
-#             {'text': '.пауза https://vk.com/wall-229144827_1',
-#              'peer_id': JUDGE_CHAT_ID,
-#              'from_id': 123456},
-#             called=True,
-#             mock_vk_client=mock_vk_client
-#         )
-#         # Проверяем отправку сообщения
-#         assert pause_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу', 'v': '5.199', 'attachment': None}),
-#  call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Бой успешно поставлен на паузу!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
+@pytest.mark.usefixtures('clear_db')
+class TestMessageDB:
+    @pytest.mark.asyncio
+    async def test_pause(self, mock_vk_client, db_session):
+        pause_calls = await message_test(
+            {'text': '.пауза https://vk.com/wall-229144827_1',
+             'peer_id': JUDGE_CHAT_ID,
+             'from_id': 123456},
+            called=True,
+            mock_vk_client=mock_vk_client
+        )
+        # Проверяем отправку сообщения
+        assert pause_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу', 'v': '5.199', 'attachment': None}),
+ call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Бой успешно поставлен на паузу!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
