@@ -7,7 +7,7 @@ from random import randint
 
 app = FastAPI()
 
-#TODO: Описать структуру возвращаемых данных у функций
+#TODO: Прописать логику для attachments, добавить структуры из API вк (например forward)
 async def send_message(peer_id: int, text: str, attachments=None) -> dict:
     """
     Отправляет сообщение через группу ВК
@@ -18,7 +18,11 @@ async def send_message(peer_id: int, text: str, attachments=None) -> dict:
         attachments: список вложений
     
     Returns:
-        json: ответ от ВК
+        json:
+            peer_id: Идентификатор назначения.
+            message_id: Идентификатор сообщения.
+            conversation_message_id: Идентификатор сообщения в диалоге.
+            error: Сообщение об ошибке, если сообщение не было доставлено получателю.
     """
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -35,7 +39,7 @@ async def send_message(peer_id: int, text: str, attachments=None) -> dict:
     return response.json()
 
 
-
+#TODO: Описать структуру возвращаемых данных у функций
 async def send_comment(post_id: int, text: str, attachments=None) -> dict:
     """
     Отправляет комментарий к посту

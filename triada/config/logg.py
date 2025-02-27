@@ -6,10 +6,7 @@ def setup_logging():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[logging.StreamHandler()]
     )
-    
-    # Создаем корневой логгер
-    root_logger = logging.getLogger()
-    
+
     # Добавляем обработчик для вывода в консоль
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)

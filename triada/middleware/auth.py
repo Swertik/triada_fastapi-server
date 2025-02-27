@@ -7,4 +7,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if not self._is_valid_token(request):
             raise TriadaException("Invalid token", 401)
         response = await call_next(request)
-        return response 
+        return response
+
+    def _is_valid_token(self, request):
+        pass
+    #TODO: Добавить проверку вк-токена, скорее всего через http запрос

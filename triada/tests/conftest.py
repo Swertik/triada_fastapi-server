@@ -1,12 +1,15 @@
+from unittest.mock import AsyncMock
 import pytest
 import pytest_asyncio
 from triada.config.settings import TEST_DATABASE_URL
 from triada.main import app
 from triada.api.db_api import override_database, get_engine, get_sessionmaker
-from triada.schemas.models import *
+from sqlmodel import SQLModel
+
+
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_assertrepr_compare(op, left, right):
+def pytest_assertrepr_compare(left, right):
     if isinstance(left, list) and isinstance(right, list):
         def clean_token(call_obj):
             if isinstance(call_obj, tuple) and 'params' in call_obj[1]:
@@ -23,6 +26,17 @@ def pytest_assertrepr_compare(op, left, right):
         ]
 
 app.dependency_overrides = {}
+
+
+@pytest_asyncio.fixture
+async def mock_vk_client():
+    mock_response = AsyncMock()
+    mock_response.json.return_value = {"response": 1234567}
+
+    mock_client = AsyncMock()
+    mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
+
+    return mock_client
 
 
 @pytest_asyncio.fixture(scope="session")

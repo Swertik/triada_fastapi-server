@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 import logging
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +90,7 @@ class BaseDBCommand(ABC):
 
 
 class BaseUserDBCommand(ABC):
-    """Базовый класс для всех команд"""
+    """Базовый класс для команд с подключением к базе данных"""
 
     def __init__(self, peer_id: int):
         self.peer_id = peer_id

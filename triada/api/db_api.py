@@ -2,7 +2,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from triada.config.settings import DATABASE_URL, TEST_DATABASE_URL
+from triada.config.settings import DATABASE_URL
 from contextlib import contextmanager
 import threading
 

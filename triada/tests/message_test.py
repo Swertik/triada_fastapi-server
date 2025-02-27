@@ -1,24 +1,9 @@
 import datetime
-
 import pytest
-import pytest_asyncio
-from unittest.mock import AsyncMock, patch, call, ANY
+from unittest.mock import patch, call, ANY
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
-from triada.api.db_api import get_sessionmaker
-from triada.schemas.models import Battles, BattlesPlayers
-from sqlalchemy import select
-
-
-@pytest_asyncio.fixture
-async def mock_vk_client():
-    mock_response = AsyncMock()
-    mock_response.json.return_value = {"response": 1234567}
-    
-    mock_client = AsyncMock()
-    mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
-    
-    return mock_client
+from triada.schemas.table_models import Battles, BattlesPlayers
 
 
 @pytest.mark.asyncio
@@ -81,4 +66,3 @@ class TestMessageDB:
         }, called=True, mock_vk_client=mock_vk_client)
 
         assert my_battles_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000001, 'message': 'f', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
-

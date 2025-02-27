@@ -1,14 +1,12 @@
 """
 Реализации команд для судьи
 """
-from typing import List
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
 from triada.commands.base import BaseCommand, BaseDBCommand
-from triada.schemas.models import Battles
+from triada.schemas.table_models import Battles
 #TODO: Разобраться с запросами к базе данных
-from sqlmodel import Session, select, text
-from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID, DATABASE_URL
-from triada.api.db_api import get_db_url
+from sqlmodel import select, text
+from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 
 JUDGE_COMMANDS = [
     "вердикт",
@@ -78,7 +76,7 @@ class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
         query = text("SELECT * FROM process_add_time(:link, :time)")  # Имя функции в PostgreSQL
         result = session.exec(query, {"link": self.link, "time": self.text})
-        stats = result.fetchone()  # Получение результата
+        result.fetchone()  # Получение результата
         await send_comment(self.link, f"УВЕДОМЛЕНИЕ\n\nБой продлён на {self.text} часов.")
 
     async def _needs_commit(self) -> bool:

@@ -1,5 +1,4 @@
 from triada.config.vk_types import  VkBotEventType
-from triada.config.settings import CONFIRM_CODE
 from triada.handlers.message import handle_message
 from triada.handlers.post import handle_post
 from triada.handlers.reply import handle_reply

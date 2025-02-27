@@ -1,10 +1,6 @@
-import os
-
 import pytest
-
-from triada.schemas.models import Users  # Импортируем модель
+from triada.schemas.table_models import Users  # Импортируем модель
 from sqlalchemy.future import select
-from sqlmodel import SQLModel
 
 
 @pytest.mark.asyncio

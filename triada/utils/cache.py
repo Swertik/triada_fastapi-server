@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Any
 
 class Cache:
     @lru_cache(maxsize=100)

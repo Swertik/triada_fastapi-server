@@ -1,20 +1,22 @@
 from triada.config.settings import GROUP_ID, JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.api.vk_api import send_message
-from fastapi.responses import PlainTextResponse
 from triada.utils.patterns import MESSAGE_PATTERN
 from triada.config.logg import logger
 from triada.commands.judje_commands import VerdictCommand, CloseCommand, OpenCommand, PauseCommand, RePauseCommand, \
     ExtendCommand, SuspectsCommand, HelloCommand
 from typing import Optional, Tuple
-from sqlmodel import select, Session
-from triada.schemas.models import Battles, BattlesPlayers, Users
+from sqlmodel import select
+from triada.schemas.table_models import Battles, BattlesPlayers, Users
 from triada.api.db_api import get_sessionmaker
 
 #TODO: Написать адекватные описания для функций, вместе с типизацией
 
 
 async def handle_message(message: dict) -> dict:
-
+    """
+    Функция, принимающая сообщение и определяющая, в какой обработчик его отправить.
+    """
+    #TODO: Заменить работу с словарём на работу с моделью Message
     if message["text"].startswith("."):
         logger.info(f"Received message: {message}")
 
@@ -63,10 +65,9 @@ async def handle_battle_commands(command: str, link: int, text: str, message: di
         try:
             await command_creator().execute()
             logger.debug(f"Command executed: {command}")
-            return
         except Exception as e:
             logger.error(f"Error executing command: {e}")
-            return
+    return
 
 
 async def parse_message(msg: dict) -> Optional[Tuple[str, str, str]]:
