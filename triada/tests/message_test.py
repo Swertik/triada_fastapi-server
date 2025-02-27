@@ -60,6 +60,7 @@ class TestMessageDB:
 
     @pytest.mark.asyncio
     async def test_my_battles(self, mock_vk_client, db_session):
+        #TODO: Сделать link рандомным
         new_user_battle = BattlesPlayers(user_id=1, link=1000, time_out=datetime.datetime.now(), character='fff', universe='ff', user_name='Egor', turn=0)
         db_session.add(new_user_battle)
         await db_session.commit()
@@ -69,5 +70,5 @@ class TestMessageDB:
             "from_id": 1
         }, called=True, mock_vk_client=mock_vk_client)
 
-        assert my_battles_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000001, 'message': 'f', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
+        assert my_battles_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000001, 'message': f'Ваши бои:\n\nhttps://vk.com/wall-229144827_1000', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
