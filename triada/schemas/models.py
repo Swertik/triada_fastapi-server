@@ -1,6 +1,8 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from sqlalchemy import Column, Interval
 from sqlmodel import SQLModel, Field
 
 
@@ -53,10 +55,12 @@ class BattlesPlayers(SQLModel, table=True):
     character: str
     universe: str
     turn: int
-    result: str
-    time_out: datetime
+    result: str | None = Field(default=None)
+    time_out: timedelta = Field(
+        sa_column=Column(Interval())  # Сопоставляем с INTERVAL
+    )
     user_name: str
-    hidden_action: str
+    hidden_action: str | None
     link: int
 
     model_config = ConfigDict(extra='forbid')

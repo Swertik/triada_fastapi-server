@@ -46,16 +46,16 @@ class OpenCommand(BaseCommand):
 
 class PauseCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-
         battle = (await session.exec(select(Battles).where(Battles.link == self.link))).first()
         battle.status = 'paused'
         session.add(battle)
-        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу")
+        await session.commit()
 
     async def _needs_commit(self) -> bool:
         return True
 
     async def _send_success_message(self) -> None:
+        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу")
         await send_message(JUDGE_CHAT_ID, 'Бой успешно поставлен на паузу!')
 
 
@@ -65,12 +65,12 @@ class RePauseCommand(BaseDBCommand):
         battle.status = 'active'
         session.add(battle)
         session.commit()
-        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой снят с паузы")
 
     async def _needs_commit(self) -> bool:
         return True
     
     async def _send_success_message(self) -> None:
+        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой снят с паузы")
         await send_message(JUDGE_CHAT_ID, 'Бой успешно снят с паузы!')
 
 

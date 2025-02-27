@@ -59,10 +59,10 @@ async def handle_battle_commands(command: str, link: int, text: str, message: di
     }
 
     if command_creator := commands.get(command.lower()):
-        logger.info(f"Executing command: {command}")
+        logger.info(f"Received command: {command}")
         try:
-            text = await command_creator().execute()
-            logger.debug(f"Command executed: {text}")
+            await command_creator().execute()
+            logger.debug(f"Command executed: {command}")
             return
         except Exception as e:
             logger.error(f"Error executing command: {e}")
@@ -81,7 +81,7 @@ async def parse_message(msg: dict) -> Optional[Tuple[str, str, str]]:
     return None
 
 
-async def handle_user_commands(command: str, text: str, message: dict) -> None:
+async def handle_user_commands(command: str, text: str, msg: dict) -> None:
     # commands = {
     #     'мои бои': lambda: MyBattlesCommand(link, text, message['peer_id']),  # TODO: Добавить обработчик вложений
     #     'бои': lambda: BattlesCommand(link, text, message['peer_id']),
@@ -104,18 +104,18 @@ async def handle_user_commands(command: str, text: str, message: dict) -> None:
             async_session = get_sessionmaker()
             async with async_session() as session:
                 query = select(BattlesPlayers).where(BattlesPlayers.user_id == msg['from_id'])
-                link = session.exec(query).all()
-                if not link:
+                users_battles = (await session.exec(query)).all()
+                if not users_battles:
                     text = """Ваши бои:\n\nУ вас нет активных боёв"""
                 else:
-                    text = "Ваши бои:\n\n" + "\n".join(f"https://vk.com/wall-{GROUP_ID}_{links[0]}" for links in link)
-                await send_message(msg['peer_id'], text)
+                    text = "Ваши бои:\n\n" + "\n".join(f"https://vk.com/wall-{GROUP_ID}_{links.link}" for links in users_battles)
+                await send_message(peer_id=msg['peer_id'],text= 'f')
 
         case 'бои':
             async_session = get_sessionmaker()
             async with async_session() as session:
                 query = select(Battles).where(Battles.status == 'active')
-                link = session.exec(query).all()
+                link = (await session.exec(query)).all()
                 if not link:
                     text = """Активных боёв нет"""
                 else:
@@ -131,7 +131,7 @@ async def handle_user_commands(command: str, text: str, message: dict) -> None:
             async_session = get_sessionmaker()
             async with async_session() as session:
                 query = select(Users).where(Users.user_id == msg['from_id'])
-                user = session.exec(query).first()
+                user = (session.exec(query)).first()
                 if not user:
                     await send_message(msg['peer_id'], "Вы ещё не играли бои")
 

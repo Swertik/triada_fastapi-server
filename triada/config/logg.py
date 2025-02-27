@@ -3,7 +3,8 @@ import logging
 def setup_logging():
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler()]
     )
     
     # Создаем корневой логгер
@@ -14,7 +15,6 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(formatter)
-    root_logger.addHandler(console_handler)
 
 # Инициализируем логирование
 setup_logging()
