@@ -12,7 +12,7 @@ async def test_create_user(db_session, clear_db):
 
     # Проверяем, что он записан в БД
     stmt = select(Users).where(Users.user_name == "Alice")
-    result = await db_session.execute(stmt)
+    result = await db_session.exec(stmt)
     user = result.scalars().first()
     print(result)
 
