@@ -110,7 +110,7 @@ async def handle_user_commands(command: str, text: str, msg: dict) -> None:
                     text = """Ваши бои:\n\nУ вас нет активных боёв"""
                 else:
                     text = "Ваши бои:\n\n" + "\n".join(f"https://vk.com/wall-{GROUP_ID}_{links.link}" for links in users_battles)
-                await send_message(peer_id=msg['peer_id'],text= 'f')
+                await send_message(peer_id=msg['peer_id'],text= text)
 
         case 'бои':
             async_session = get_sessionmaker()
