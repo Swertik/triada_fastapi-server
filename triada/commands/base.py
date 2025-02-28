@@ -48,7 +48,7 @@ class BaseDBCommand(ABC):
     """Базовый класс для всех команд"""
     
     def __init__(self, link: int, text: str, peer_id: int):
-        self.link = int(link)
+        self.link = link
         self.text = text
         self.peer_id = peer_id
         

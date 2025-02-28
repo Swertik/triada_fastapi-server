@@ -1,4 +1,6 @@
 import datetime
+from random import randint
+
 import pytest
 from unittest.mock import patch, call, ANY
 import pytest_asyncio
@@ -24,6 +26,7 @@ async def post_test(post: dict, called: bool = True, mock_vk_client = None):
 class TestPost:
     @pytest.mark.asyncio
     async def test_post(self, mock_vk_client, db_session):
+        uid = randint(1,10000)
         new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
         db_session.add_all(new_judges)
         await db_session.commit()
@@ -32,7 +35,7 @@ class TestPost:
 「 [id736580398|Roman Borsalinovich] в роли «Киллер Би» из «Наруто» 」
 
 Время на пост: 24 часа""",
-            "id": 1
+            "id": uid # Не менять
         }, called=True, mock_vk_client=mock_vk_client)
 
 
@@ -41,10 +44,10 @@ class TestPost:
             'peer_id': 2000000002,
             'message': 'Пост под судейством @id2(этого судьи)',
             'random_id': ANY, 'v': '5.199', 'attachment': None})]
-        assert ((await db_session.exec(select(Battles).where(Battles.link == 1))).one() ==
-                Battles(date=ANY, judge_id=2, time_out=datetime.timedelta(days=1), link=1, turn=0, status='active'))
-        assert ((await db_session.exec(select(BattlesPlayers).where(BattlesPlayers.link == 1))).all() ==
-                [BattlesPlayers(id=2,
+        assert ((await db_session.exec(select(Battles).where(Battles.link == uid))).first() ==
+                Battles(date=ANY, judge_id=2, time_out=datetime.timedelta(days=1), link=ANY, turn=0, status='active'))
+        assert ((await db_session.exec(select(BattlesPlayers).where(BattlesPlayers.link == uid))).all() ==
+                [BattlesPlayers(id=ANY,
                                 turn=1,
                                 universe='Наруто',
                                 time_out=None,
@@ -53,8 +56,8 @@ class TestPost:
                                 character='Киллер Би',
                                 result=None,
                                 user_name='Roman Borsalinovich',
-                                link=1),
-                BattlesPlayers(id=1,
+                                link=uid),
+                BattlesPlayers(id=ANY,
                                turn=0,
                                universe='Наруто',
                                time_out=ANY,
@@ -63,5 +66,5 @@ class TestPost:
                                character='Дейдара',
                                result=None,
                                user_name='Gene Takovic',
-                               link=1)])
+                               link=uid)])
 

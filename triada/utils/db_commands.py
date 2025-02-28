@@ -29,11 +29,11 @@ async def process_battle_transaction(
 
     # 2. Выбираем судью с минимальным активными битвами и он не игрок
 
-    selected_judge: Judges = (await async_session.execute(
+    selected_judge: Judges = (await async_session.exec(
         select(Judges)
         .where(Judges.judge_id.not_in(users_ids))
         .order_by(Judges.active_battles))
-                      ).scalars().first()
+                      ).first()
 
     if not selected_judge:
         raise ValueError("No available judges")

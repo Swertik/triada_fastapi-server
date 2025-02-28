@@ -19,7 +19,6 @@ async def handle_post(wall_object: dict) -> None:
         async with async_engine() as connection:
             result = await process_battle_transaction(async_session=connection, player_data=players, battle_link=post_id, time_out_hours=time_out)
             await connection.commit()
-            await connection.exec(select(Battles).where(Battles.link == post_id))
             await send_message(peer_id=JUDGE_CHAT_ID, text=f'Пост под судейством @id{result}(этого судьи)')
     return
 
