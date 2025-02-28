@@ -5,9 +5,9 @@ from sqlmodel import Field
 
 
 class Message(BaseModel):
-    id: int
+    id: int = Field(default=None)
     text: str
     peer_id: int
     from_id: int
     attachments: Optional[List[dict]] = Field(default=None)
-    date: datetime
+    date: datetime = Field(default=None)

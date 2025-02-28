@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
+from sqlmodel import select
 
+from triada.api.vk_api import get_post_by_id
+from triada.config.settings import GROUP_ID
 from triada.config.vk_types import  VkBotEventType
 from triada.handlers.message import handle_message
 from triada.handlers.post import handle_post
@@ -9,7 +12,8 @@ from triada.handlers.reply import handle_reply
 from fastapi import FastAPI, Depends
 from fastapi.responses import PlainTextResponse
 from triada.config.logg import logger
-from triada.api.db_api import get_session
+from triada.api.db_api import get_session, get_sessionmaker
+from triada.schemas.table_models import Battles
 from triada.utils.db_commands import process_battle_transaction
 
 app = FastAPI()
@@ -25,8 +29,19 @@ def new_confirm_code(confirm_code: str):
 
 
 @app.post("/post_to_battles/{post_id}")
-def post_to_battles(post_id: int):
+async def post_to_battles(post_id: int):
+    post = await get_post_by_id(posts=[f'-{GROUP_ID}_{post_id}'])
+    post_text = post["response"]['items'][0]['text']
+    await process_battle_transaction(post_id, post_text)
+    return {"response": "ok"}
 
+
+@app.get("/battles")
+async def get_battles():
+    session = get_sessionmaker()
+    async with session() as async_session:
+        all_battles = (await async_session.exec(select(Battles).where(Battles.status == 'active'))).all()
+    return {"battles": all_battles}
 
 @app.post("/callback", dependencies=[Depends(get_session)])
 async def callback(data: dict):

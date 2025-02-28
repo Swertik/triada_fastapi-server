@@ -158,6 +158,19 @@ async def save_photo(server: str, photos_list: str, group_id: int, album_id: int
         )
     return response.json()
 
+async def get_post_by_id(posts: list) -> dict:
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            'https://api.vk.com/method/wall.getById',
+            params={
+                "access_token": MY_TOKEN,
+                "posts": posts,
+                "v": "5.199"
+            }
+        )
+    return response.json()
+
 class LoadPhotoModel(BaseModel):
     group_id: int
     album_id: int
@@ -178,6 +191,5 @@ async def root():
 
 
 if __name__ == "__main__":
-    asyncio.run(send_comment(1,'fff'))
-    #import uvicorn
-    #uvicorn.run("vk_api:app", host="26.208.140.30", port=8080, reload=True)
+    a = asyncio.run(get_post_by_id(posts=[f'-{GROUP_ID}_40']))
+    print(a["response"]['items'][0]['text'])
