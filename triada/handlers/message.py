@@ -9,12 +9,27 @@ from sqlmodel import select
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
 from triada.api.db_api import get_sessionmaker
 
-#TODO: Написать адекватные описания для функций, вместе с типизацией
-
 
 async def handle_message(message: dict) -> dict:
     """
-    Функция, принимающая сообщение и определяющая, в какой обработчик его отправить.
+    Функция, принимающая сообщение и определяющая обработчик для этого сообщения
+
+    Args:
+        message: Словарь аргументов сообщения
+
+            {text: Текст полученного сообщения,
+
+            peer_id: Идентификатор чата, откуда пришло сообщение,
+
+            from_id: Идентификатор того, кто отправил сообщение (Если сообщение из лс, то равен peer_id),
+
+            date: Дата и время отправленного сообщения,
+
+            attachments: Все прикреплённые к сообщению файлы (музыка, фото, видео)},
+
+    Returns:
+        Сконструированный словарь с информацией о том, какая команда была выполнена
+
     """
     #TODO: Заменить работу с словарём на работу с моделью Message
     if message["text"].startswith("."):
@@ -44,6 +59,8 @@ async def handle_message(message: dict) -> dict:
 
     return {'response': 'ok', 'status': 200, 'message': 'Not a command', 'peer_id': message['peer_id']}
 
+
+#TODO: Написать адекватные описания для функций, вместе с типизацией
 
 async def handle_battle_commands(command: str, link: int, text: str, message: dict) -> None:
     """

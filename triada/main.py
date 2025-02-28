@@ -1,3 +1,7 @@
+from contextlib import asynccontextmanager
+
+import uvicorn
+
 from triada.config.vk_types import  VkBotEventType
 from triada.handlers.message import handle_message
 from triada.handlers.post import handle_post
@@ -9,7 +13,6 @@ from triada.api.db_api import get_session
 
 app = FastAPI()
 
-
 @app.get("/")
 async def root():
     return PlainTextResponse("Hello World!")
@@ -18,6 +21,8 @@ async def root():
 def new_confirm_code(confirm_code: str):
     global CONFIRM_CODE
     CONFIRM_CODE = confirm_code
+
+
 
 
 @app.post("/callback", dependencies=[Depends(get_session)])
@@ -38,3 +43,6 @@ async def callback(data: dict):
         await handle_reply(data["object"])
 
     return PlainTextResponse("ok")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

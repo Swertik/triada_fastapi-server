@@ -4,7 +4,6 @@
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
 from triada.commands.base import BaseCommand, BaseDBCommand
 from triada.schemas.table_models import Battles
-#TODO: Разобраться с запросами к базе данных
 from sqlmodel import select, text
 from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 
@@ -74,7 +73,8 @@ class RePauseCommand(BaseDBCommand):
 
 class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-        query = text("SELECT * FROM process_add_time(:link, :time)")  # Имя функции в PostgreSQL
+        query = text("SELECT * FROM process_add_time(:link, :time)")
+        #TODO: Разобраться с запросами к базе данных и переписать process add time в python
         result = session.exec(query, {"link": self.link, "time": self.text})
         result.fetchone()  # Получение результата
         await send_comment(self.link, f"УВЕДОМЛЕНИЕ\n\nБой продлён на {self.text} часов.")
