@@ -5,7 +5,7 @@ from unittest.mock import patch, call, ANY
 from datetime import timedelta
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
-from triada.schemas.table_models import Battles, BattlesPlayers
+from triada.schemas.table_models import Battles, BattlesPlayers, Users
 from triada.tests.post_test import post_test
 
 
@@ -25,19 +25,27 @@ async def message_test(message: dict, called: bool = True, mock_vk_client = None
 
 class TestMessage:
     @pytest.mark.asyncio
-    async def test_hello(self, mock_vk_client):
-        hello_calls = await message_test({'text': '.привет',
-                                        'peer_id': JUDGE_CHAT_ID,
-                                        'from_id': 123456}, called=True, mock_vk_client=mock_vk_client)
-        assert hello_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': JUDGE_CHAT_ID, 'message': 'Привет!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
-
-    @pytest.mark.asyncio
-    async def test_call(self, mock_vk_client):
+    async def test_verdict(self, mock_vk_client):
         vervict_calls = await message_test({'text': '.вердикт https://vk.com/wall-229144827_1 текст вердикта',
                                             'peer_id': JUDGE_CHAT_ID,
                                             'from_id': 123456}, called=True, mock_vk_client=mock_vk_client)
         assert vervict_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'текст вердикта', 'v': '5.199', 'attachment': None}), call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Комментарий в пост размещен!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
+    @pytest.mark.asyncio
+    async def test_commands(self, mock_vk_client):
+        commands_calls = await message_test({
+            "text": ".команды",
+            "peer_id": FLOOD_CHAT_ID,
+            "from_id": 1,
+        }, called=True, mock_vk_client=mock_vk_client)
+
+        assert commands_calls == [call('https://api.vk.com/method/messages.send',
+                                       params={'access_token': ANY,
+                                               'peer_id': 1,
+                                               'message': 'Команды:\n- мои бои\n- бои\n- команды',
+                                               'random_id': ANY,
+                                               'v': '5.199',
+                                               'attachment': None})]
 
 @pytest.mark.usefixtures('clear_db')
 class TestMessageDB:
@@ -72,3 +80,41 @@ class TestMessageDB:
 
         assert my_battles_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000001, 'message': f'Ваши бои:\n\nhttps://vk.com/wall-229144827_1000', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
+    @pytest.mark.asyncio
+    async def test_battles(self, mock_vk_client, db_session):
+
+        new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
+        db_session.add(new_battle)
+        await db_session.commit()
+        battles_calls = await message_test({
+            "text": ".бои",
+            "peer_id": FLOOD_CHAT_ID,
+            "from_id": 1
+        }, called=True, mock_vk_client=mock_vk_client)
+
+        assert battles_calls == [call('https://api.vk.com/method/messages.send',
+                                      params={'access_token': ANY,
+                                              'peer_id': 2000000001,
+                                              'message': 'Активные бои:\n\nhttps://vk.com/wall-229144827_123',
+                                              'random_id': ANY,
+                                              'v': '5.199',
+                                              'attachment': None})]
+
+    @pytest.mark.asyncio
+    async def test_my_stat(self, mock_vk_client, db_session):
+        new_user = Users(user_id=1, user_name='Egor')
+        db_session.add(new_user)
+        await db_session.commit()
+        my_stat_calls = await message_test({
+            "text": ".моя стата",
+            "peer_id": FLOOD_CHAT_ID,
+            "from_id": 1
+        }, called=True, mock_vk_client=mock_vk_client)
+
+        assert my_stat_calls == [call('https://api.vk.com/method/messages.send',
+                                      params={'access_token': ANY,
+                                              'peer_id': 2000000001,
+                                              'message': 'Ваша статистика:\n\nКоличество боев: 0\nКоличество побед: 0\nКоличество технических побед: 0\nКоличество поражений: 0\nКоличество технических поражений: 0\nВаш ММР: 100\nФрагменты побед: 0\nФрагменты величия: 0\nМесто в рейтинге: [В РАЗРАБОТКЕ]\n',
+                                              'random_id': ANY,
+                                              'v': '5.199',
+                                              'attachment': None})]

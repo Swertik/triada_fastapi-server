@@ -2,7 +2,7 @@
 Реализации команд для судьи
 """
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
-from triada.commands.base import BaseCommand, BaseDBCommand
+from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand
 from triada.schemas.table_models import Battles
 from sqlmodel import select, text
 from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
@@ -86,7 +86,7 @@ class ExtendCommand(BaseDBCommand):
         await send_message(JUDGE_CHAT_ID, 'В бою успешно проведено продление!')
 
 
-class SuspectsCommand(BaseDBCommand):
+class SuspectsCommand(BaseUserDBCommand):
 
     async def _execute_command(self, session) -> None:
         result = session.exec(select(Battles).where(Battles.judge_id == self.link))

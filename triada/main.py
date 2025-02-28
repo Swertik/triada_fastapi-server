@@ -10,6 +10,7 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import PlainTextResponse
 from triada.config.logg import logger
 from triada.api.db_api import get_session
+from triada.utils.db_commands import process_battle_transaction
 
 app = FastAPI()
 
@@ -23,6 +24,8 @@ def new_confirm_code(confirm_code: str):
     CONFIRM_CODE = confirm_code
 
 
+@app.post("/post_to_battles/{post_id}")
+def post_to_battles(post_id: int):
 
 
 @app.post("/callback", dependencies=[Depends(get_session)])
