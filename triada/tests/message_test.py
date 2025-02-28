@@ -6,7 +6,6 @@ from datetime import timedelta
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
-from triada.tests.post_test import post_test
 
 
 @pytest.mark.asyncio
@@ -26,10 +25,10 @@ async def message_test(message: dict, called: bool = True, mock_vk_client = None
 class TestMessage:
     @pytest.mark.asyncio
     async def test_verdict(self, mock_vk_client):
-        vervict_calls = await message_test({'text': '.вердикт https://vk.com/wall-229144827_1 текст вердикта',
+        verdict_calls = await message_test({'text': '.вердикт https://vk.com/wall-229144827_1 текст вердикта',
                                             'peer_id': JUDGE_CHAT_ID,
                                             'from_id': 123456}, called=True, mock_vk_client=mock_vk_client)
-        assert vervict_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'текст вердикта', 'v': '5.199', 'attachment': None}), call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Комментарий в пост размещен!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
+        assert verdict_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'текст вердикта', 'v': '5.199', 'attachment': None}), call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Комментарий в пост размещен!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
     @pytest.mark.asyncio
     async def test_commands(self, mock_vk_client):
