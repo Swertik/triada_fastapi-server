@@ -47,9 +47,10 @@ class MyBattlesCommand(BaseUserDBCommand):
         #TODO: Добавить нормальное сообщение
         await send_message(self.peer_id, self.text)
 
+
 class BattlesCommand(BaseUserDBCommand):
     async def _execute_command(self, session):
-        battles = (await session.exec(select(Battles).where(Battles.status == 'active'))).all()
+        battles = (await session.exec(select(Battles).where(Battles.status != 'closed'))).all()
 
         if not battles:
             raise ValueError("Активные бои:\n\n Активных боёв на данный момент нет.")

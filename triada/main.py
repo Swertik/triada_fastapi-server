@@ -1,5 +1,3 @@
-from contextlib import asynccontextmanager
-
 import uvicorn
 from sqlmodel import select
 
@@ -15,6 +13,10 @@ from triada.config.logg import logger
 from triada.api.db_api import get_session, get_sessionmaker
 from triada.schemas.table_models import Battles
 from triada.utils.db_commands import process_battle_transaction
+
+
+CONFIRM_CODE = "c2edaf9e"
+
 
 app = FastAPI()
 
@@ -40,8 +42,9 @@ async def post_to_battles(post_id: int):
 async def get_battles():
     session = get_sessionmaker()
     async with session() as async_session:
-        all_battles = (await async_session.exec(select(Battles).where(Battles.status == 'active'))).all()
+        all_battles = (await async_session.exec(select(Battles).where(Battles.status != 'closed'))).all()
     return {"battles": all_battles}
+
 
 @app.post("/callback", dependencies=[Depends(get_session)])
 async def callback(data: dict):
