@@ -3,6 +3,10 @@ import datetime
 import pytest
 from unittest.mock import patch, call, ANY
 from datetime import timedelta
+
+from sqlalchemy import delete
+from sqlmodel import select
+
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
@@ -82,6 +86,7 @@ class TestMessageDB:
     @pytest.mark.asyncio
     async def test_battles(self, mock_vk_client, db_session):
 
+        await db_session.exec(delete(Battles))
         new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
         db_session.add(new_battle)
         await db_session.commit()
