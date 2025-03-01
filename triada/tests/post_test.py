@@ -3,8 +3,6 @@ from random import randint
 
 import pytest
 from unittest.mock import patch, call, ANY
-import pytest_asyncio
-from Scripts.bottle import response
 from sqlmodel import select
 from triada.handlers.post import handle_post
 from triada.main import post_to_battles
