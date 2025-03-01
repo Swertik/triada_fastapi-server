@@ -111,7 +111,6 @@ async def handle_user_commands(command: str, message: Message) -> None:
         try:
             text = await command_creator().execute()
             logger.debug(f"Command executed: {text}")
-            return
         except Exception as e:
             logger.error(f"Error executing command: {e}")
-            return
+    return

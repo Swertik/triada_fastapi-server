@@ -34,8 +34,14 @@ def new_confirm_code(confirm_code: str):
 async def post_to_battles(post_id: int):
     post = await get_post_by_id(posts=[f'-{GROUP_ID}_{post_id}'])
     post_text = post["response"]['items'][0]['text']
-    await process_battle_transaction(post_id, post_text)
-    return {"response": "ok"}
+    try:
+        await process_battle_transaction(post_id, post_text)
+        return {"response": "ok"}
+    except Exception as e:
+        logger.error(e)
+        return {"response": "error"}
+
+
 
 
 @app.get("/battles")
