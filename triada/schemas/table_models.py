@@ -52,7 +52,7 @@ class BattlesPlayers(SQLModel, table=True):
 
 
 class Judges(SQLModel, table=True):
-    __tablename__ = "juddes"
+    __tablename__ = "judges"
 
     judge_id: int = Field(primary_key=True)
     total_ratings: int = Field(default=0)
