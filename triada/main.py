@@ -11,7 +11,7 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import PlainTextResponse
 from triada.config.logg import logger
 from triada.api.db_api import get_session, get_sessionmaker
-from triada.schemas.table_models import Battles
+from triada.schemas.table_models import Battles, Judges
 from triada.utils.db_commands import process_battle_transaction
 
 
@@ -39,9 +39,16 @@ async def post_to_battles(post_id: int):
         return {"response": "ok"}
     except Exception as e:
         logger.error(e)
-        return {"response": "error"}
+        return {"response": "error", "error": str(e)}
 
 
+@app.get("/judges")
+async def get_judges():
+
+    session = get_sessionmaker()
+    async with session() as async_session:
+        judges = (await async_session.exec(select(Judges))).all()
+    return {"battles": judges}
 
 
 @app.get("/battles")
