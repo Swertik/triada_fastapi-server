@@ -27,11 +27,7 @@ async def post_test(post: dict, called: bool = True, mock_vk_client = None):
 @pytest.mark.usefixtures('clear_db')
 class TestPost:
     @pytest.mark.asyncio
-    async def test_post(self, mock_vk_client, db_session):
-        uid = randint(1,10000)
-        new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
-        db_session.add_all(new_judges)
-        await db_session.commit()
+    async def test_post(self, mock_vk_client, db_session, test_db):
         post = await post_test({
             "text": """🗡 • Тессеракт • 🗡
 🏹 • ПТБ: Поединок • 🛡
@@ -71,7 +67,7 @@ V. ⚙ — Условия сражения — 🔧 :
 • Условия победы: Убийство оппонента •
 • Время на пост: 24 часа •
 • Порядок действий: [id456507851|Дейдара] -> [id736580398|Киллер Би] •""",
-            "id": uid # Не менять
+            "id": 124 # Не менять
         }, called=True, mock_vk_client=mock_vk_client)
 
 
@@ -80,9 +76,9 @@ V. ⚙ — Условия сражения — 🔧 :
             'peer_id': 2000000002,
             'message': 'Пост под судейством @id2(этого судьи)',
             'random_id': ANY, 'v': '5.199', 'attachment': None})]
-        assert ((await db_session.exec(select(Battles).where(Battles.link == uid))).first() ==
+        assert ((await db_session.exec(select(Battles).where(Battles.link == 124))).first() ==
                 Battles(date=ANY, judge_id=2, time_out=datetime.timedelta(days=1), link=ANY, turn=0, status='active'))
-        assert ((await db_session.exec(select(BattlesPlayers).where(BattlesPlayers.link == uid))).all() ==
+        assert ((await db_session.exec(select(BattlesPlayers).where(BattlesPlayers.link == 124))).all() ==
                 [BattlesPlayers(id=ANY,
                                 turn=1,
                                 universe='Наруто',
@@ -92,7 +88,7 @@ V. ⚙ — Условия сражения — 🔧 :
                                 character='Киллер Би',
                                 result=None,
                                 user_name='Roman Borsalinovich',
-                                link=uid),
+                                link=124),
                 BattlesPlayers(id=ANY,
                                turn=0,
                                universe='Наруто',
@@ -102,15 +98,10 @@ V. ⚙ — Условия сражения — 🔧 :
                                character='Дейдара',
                                result=None,
                                user_name='Gene Takovic',
-                               link=uid)])
+                               link=124)])
 
     @pytest.mark.asyncio
     async def test_hand_new_post(self, mock_vk_client, db_session):
-        await db_session.exec(delete(Judges))
-        new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
-        db_session.add_all(new_judges)
-        await db_session.commit()
-
         response = (await post_to_battles(40))
 
         assert response == {"response": "ok"}

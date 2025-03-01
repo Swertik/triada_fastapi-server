@@ -16,19 +16,9 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
     player_data = [{'user_id': int(i[0]), 'user_name': i[1], 'character': i[2], 'universe': i[3]} for i in players]
     async_engine = get_sessionmaker()
     async with async_engine() as async_session:
-        users_ids = []
-        #     # 1. Добавляем игрок
-        for index, player in enumerate(player_data):
-            battle_player = BattlesPlayers(
-                user_id=player['user_id'],
-                user_name=player['user_name'],
-                character=player['character'],
-                universe=player['universe'],
-                turn=index,
-                link=post_id
-            )
-            users_ids.append(battle_player.user_id)
-            async_session.add(battle_player)
+        # 1. Определяем id игроков
+        users_ids = [int(i[0]) for i in players]
+
 
         # 2. Выбираем судью с минимальным активными битвами и он не игрок
 
@@ -49,7 +39,19 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
         )
         async_session.add(new_battle)
 
-        # 3. Обновляем тайм-аут для первого игрока
+        # 3. Создаём записи игроков
+        for index, player in enumerate(player_data):
+            battle_player = BattlesPlayers(
+                user_id=player['user_id'],
+                user_name=player['user_name'],
+                character=player['character'],
+                universe=player['universe'],
+                turn=index,
+                link=post_id
+            )
+            async_session.add(battle_player)
+
+        # 4. Обновляем тайм-аут для первого игрока
         first_player = ((await async_session.exec(
             select(BattlesPlayers)
             .filter_by(link=post_id, turn=0)))
@@ -58,7 +60,7 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
         if first_player:
             first_player.time_out = datetime.now() + timedelta(hours=time_out_hours)
 
-        # 4. Обновляем счетчик активных битв у судьи
+        # 5. Обновляем счетчик активных битв у судьи
         selected_judge.active_battles += 1
 
         # Коммитим все изменения

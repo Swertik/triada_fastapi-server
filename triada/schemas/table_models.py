@@ -46,7 +46,7 @@ class BattlesPlayers(SQLModel, table=True):
     time_out: datetime | None = Field(default=None)  # Сопоставляем с INTERVAL
     user_name: str
     hidden_action: str | None
-    link: int
+    link: int = Field(foreign_key="battles.link")
 
     model_config = ConfigDict(extra='forbid')
 

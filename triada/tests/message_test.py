@@ -10,6 +10,7 @@ from sqlmodel import select
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
+from triada.tests.conftest import test_db
 
 
 @pytest.mark.asyncio
@@ -52,44 +53,37 @@ class TestMessage:
 
 @pytest.mark.usefixtures('clear_db')
 class TestMessageDB:
+
     @pytest.mark.asyncio
-    async def test_pause(self, mock_vk_client, db_session):
-                        # Не менять
-        new_battle = Battles(link=1, judge_id=1, time_out=timedelta(hours=24))
-        db_session.add(new_battle)
-        await db_session.commit()
+    async def test_pause(self, mock_vk_client, db_session, test_db):
         pause_calls = await message_test(
-            {'text': '.пауза https://vk.com/wall-229144827_1',
+            {'text': '.пауза https://vk.com/wall-229144827_123',
              'peer_id': JUDGE_CHAT_ID,
              'from_id': 123456},
             called=True,
             mock_vk_client=mock_vk_client
         )
         # Проверяем отправку сообщения
-        assert pause_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу', 'v': '5.199', 'attachment': None}),
+        assert pause_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 123, 'message': 'УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу', 'v': '5.199', 'attachment': None}),
         call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Бой успешно поставлен на паузу!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
     @pytest.mark.asyncio
     async def test_my_battles(self, mock_vk_client, db_session):
         #TODO: Сделать link рандомным
-        new_user_battle = BattlesPlayers(user_id=1, link=1000, time_out=datetime.datetime.now(), character='fff', universe='ff', user_name='Egor', turn=0)
-        db_session.add(new_user_battle)
-        await db_session.commit()
         my_battles_calls = await message_test({
             "text": '.мои бои',
             "peer_id": FLOOD_CHAT_ID,
             "from_id": 1
         }, called=True, mock_vk_client=mock_vk_client)
 
-        assert my_battles_calls == [call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000001, 'message': f'Ваши бои:\n\nhttps://vk.com/wall-229144827_1000', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
+        assert my_battles_calls == [call('https://api.vk.com/method/messages.send',
+                                         params={'access_token': ANY,
+                                                 'peer_id': 2000000001,
+                                                 'message': f'Ваши бои:\n\nhttps://vk.com/wall-229144827_123',
+                                                 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
     @pytest.mark.asyncio
     async def test_battles(self, mock_vk_client, db_session):
-
-        await db_session.exec(delete(Battles))
-        new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
-        db_session.add(new_battle)
-        await db_session.commit()
         battles_calls = await message_test({
             "text": ".бои",
             "peer_id": FLOOD_CHAT_ID,
@@ -106,9 +100,6 @@ class TestMessageDB:
 
     @pytest.mark.asyncio
     async def test_my_stat(self, mock_vk_client, db_session):
-        new_user = Users(user_id=1, user_name='Egor')
-        db_session.add(new_user)
-        await db_session.commit()
         my_stat_calls = await message_test({
             "text": ".моя стата",
             "peer_id": FLOOD_CHAT_ID,
