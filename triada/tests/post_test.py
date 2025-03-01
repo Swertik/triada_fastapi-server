@@ -3,6 +3,8 @@ from random import randint
 
 import pytest
 from unittest.mock import patch, call, ANY
+
+from sqlalchemy import delete
 from sqlmodel import select
 from triada.handlers.post import handle_post
 from triada.main import post_to_battles
@@ -104,6 +106,7 @@ V. ⚙ — Условия сражения — 🔧 :
 
     @pytest.mark.asyncio
     async def test_hand_new_post(self, mock_vk_client, db_session):
+        await db_session.exec(delete(Judges))
         new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
         db_session.add_all(new_judges)
         await db_session.commit()
