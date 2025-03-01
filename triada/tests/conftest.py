@@ -41,7 +41,34 @@ async def mock_vk_client():
     return mock_client
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
+async def db_session():
+    """Создаёт сессию БД для тестов и откатывает все изменения после каждого теста"""
+    with override_database(TEST_DATABASE_URL):
+        async_session = get_sessionmaker()
+        async with async_session() as session:
+            yield session
+            await session.close()
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def test_db():
+    with override_database(TEST_DATABASE_URL):
+        engine = get_sessionmaker()
+        async with engine.begin() as session:
+            new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
+            new_user_battle = BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='fff',
+                                             universe='ff', user_name='Egor', turn=0)
+            new_user = Users(user_id=1, user_name='Egor')
+            new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
+
+            session.add_all(new_judges)
+            session.add_all([new_user_battle, new_battle, new_user])
+            await session.commit()
+            yield
+            await session.close()
+
+@pytest_asyncio.fixture(scope="session",autouse=True)
 async def clear_db():
     """
     Подготавливает базу данных к работе
@@ -56,31 +83,3 @@ async def clear_db():
         finally:
             async with engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.drop_all)  # Очистка после тестов
-
-
-@pytest_asyncio.fixture
-async def db_session():
-    """Создаёт сессию БД для тестов и откатывает все изменения после каждого теста"""
-    with override_database(TEST_DATABASE_URL):
-        async_session = get_sessionmaker()
-        async with async_session() as session:
-            yield session
-            await session.close()
-
-
-@pytest_asyncio.fixture
-async def test_db(db_session):
-    new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
-    new_user_battle = BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='fff',
-                                     universe='ff', user_name='Egor', turn=0)
-    new_user = Users(user_id=1, user_name='Egor')
-    new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
-
-    db_session.add_all(new_judges)
-    db_session.add_all([new_user_battle, new_battle, new_user])
-    await db_session.commit()
-    yield
-    db_session.delete(new_battle)
-    db_session.delete(new_user_battle)
-    db_session.delete(new_user)
-    await db_session.close()

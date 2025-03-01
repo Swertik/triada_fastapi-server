@@ -24,10 +24,10 @@ async def post_test(post: dict, called: bool = True, mock_vk_client = None):
         mock_vk_client.__aenter__.return_value.post.assert_not_called()
         return response
 
-@pytest.mark.usefixtures('clear_db')
+
 class TestPost:
     @pytest.mark.asyncio
-    async def test_post(self, mock_vk_client, db_session, test_db):
+    async def test_post(self, mock_vk_client, db_session):
         post = await post_test({
             "text": """🗡 • Тессеракт • 🗡
 🏹 • ПТБ: Поединок • 🛡

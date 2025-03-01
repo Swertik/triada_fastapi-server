@@ -1,16 +1,8 @@
-import datetime
-
 import pytest
 from unittest.mock import patch, call, ANY
-from datetime import timedelta
-
-from sqlalchemy import delete
-from sqlmodel import select
 
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
-from triada.schemas.table_models import Battles, BattlesPlayers, Users
-from triada.tests.conftest import test_db
 
 
 @pytest.mark.asyncio
@@ -35,6 +27,7 @@ class TestMessage:
                                             'from_id': 123456}, called=True, mock_vk_client=mock_vk_client)
         assert verdict_calls == [call('https://api.vk.com/method/wall.createComment', params={'owner_id': -229144827, 'access_token': ANY, 'post_id': 1, 'message': 'текст вердикта', 'v': '5.199', 'attachment': None}), call('https://api.vk.com/method/messages.send', params={'access_token': ANY, 'peer_id': 2000000002, 'message': 'Комментарий в пост размещен!', 'random_id': ANY, 'v': '5.199', 'attachment': None})]
 
+
     @pytest.mark.asyncio
     async def test_commands(self, mock_vk_client):
         commands_calls = await message_test({
@@ -51,11 +44,11 @@ class TestMessage:
                                                'v': '5.199',
                                                'attachment': None})]
 
-@pytest.mark.usefixtures('clear_db')
+
 class TestMessageDB:
 
     @pytest.mark.asyncio
-    async def test_pause(self, mock_vk_client, db_session, test_db):
+    async def test_pause(self, mock_vk_client, db_session):
         pause_calls = await message_test(
             {'text': '.пауза https://vk.com/wall-229144827_123',
              'peer_id': JUDGE_CHAT_ID,

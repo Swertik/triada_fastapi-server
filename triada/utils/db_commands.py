@@ -29,7 +29,8 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
                           ).first()
 
         if not selected_judge:
-            raise ValueError("No available judges")
+            raise ValueError(f"No available judges {(await async_session.exec(
+            select(Judges))).all()}")
 
         # 2. Создаем запись в battles
         new_battle = Battles(
