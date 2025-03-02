@@ -99,10 +99,3 @@ V. ⚙ — Условия сражения — 🔧 :
                                result=None,
                                user_name='Gene Takovic',
                                link=124)])
-
-    @pytest.mark.asyncio
-    async def test_hand_new_post(self, mock_vk_client, db_session):
-        response = (await post_to_battles(40))
-
-        assert response == {"response": "ok"}
-

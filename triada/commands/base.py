@@ -3,8 +3,12 @@
 """
 from abc import ABC, abstractmethod
 import logging
+
+from sqlmodel import select
+
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message
+from triada.schemas.table_models import Battles
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +92,25 @@ class BaseDBCommand(ABC):
         """Отправка сообщения об ошибке"""
         await send_message(self.peer_id, text)
 
+
+class BattleStatusCommand(BaseDBCommand):
+    async def _execute_command(self, session) -> None:
+        battle = (await session.exec(select(Battles).where(Battles.link == self.link))).first()
+        battle.status = await self.status()
+        await session.commit()
+        await self.command()
+
+    @abstractmethod
+    async def _send_success_message(self) -> None:
+        pass
+
+    @abstractmethod
+    async def status(self) -> None:
+        pass
+
+    @abstractmethod
+    async def command(self) -> None:
+        pass
 
 class BaseUserDBCommand(ABC):
     """Базовый класс для команд с подключением к базе данных"""

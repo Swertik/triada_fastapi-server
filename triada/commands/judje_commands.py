@@ -1,11 +1,14 @@
 """
 Реализации команд для судьи
 """
+from asyncpg.pgproto.pgproto import timedelta
+
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
-from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand
+from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand, BattleStatusCommand
 from triada.schemas.table_models import Battles
 from sqlmodel import select, text
 from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
+from triada.utils.db_commands import process_add_time
 
 JUDGE_COMMANDS = [
     "вердикт",
@@ -25,58 +28,57 @@ class VerdictCommand(BaseCommand):
         await send_message(self.peer_id, 'Комментарий в пост размещен!')
 
 
-class CloseCommand(BaseCommand):
-    async def _execute_command(self) -> None:
+class CloseCommand(BattleStatusCommand):
+    async def _send_success_message(self) -> None:
+        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой закрыт!")
+        await send_message(JUDGE_CHAT_ID, 'Бой успешно закрыт!')
+
+    async def command(self) -> None:
         await close_comments(self.link)
 
+    async def status(self) -> str:
+        return "closed"
+
+
+class OpenCommand(BattleStatusCommand):
     async def _send_success_message(self) -> None:
-        await send_message(self.peer_id, 'Пост закрыт!')
+        await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой открыт!")
+        await send_message(JUDGE_CHAT_ID, 'Бой успешно открыт!')
 
-
-class OpenCommand(BaseCommand):
-    async def _execute_command(self) -> None:
+    async def command(self) -> None:
         await open_comments(self.link)
 
-    async def _send_success_message(self) -> None:
-        await send_message(self.peer_id, 'Пост открыт!')
+    async def status(self) -> str:
+        return "paused"
 
 
-class PauseCommand(BaseDBCommand):
-    async def _execute_command(self, session) -> None:
-        battle = (await session.exec(select(Battles).where(Battles.link == self.link))).first()
-        battle.status = 'paused'
-        session.add(battle)
-        await session.commit()
-
-    async def _needs_commit(self) -> bool:
-        return True
-
+class PauseCommand(BattleStatusCommand):
     async def _send_success_message(self) -> None:
         await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой поставлен на паузу")
         await send_message(JUDGE_CHAT_ID, 'Бой успешно поставлен на паузу!')
 
+    async def command(self) -> None:
+        pass
 
-class RePauseCommand(BaseDBCommand):
-    async def _execute_command(self, session) -> None:
-        battle = session.exec(select(Battles).where(Battles.link == self.link)).one()
-        battle.status = 'active'
-        session.add(battle)
-        session.commit()
+    async def status(self) -> str:
+        return "paused"
 
-    async def _needs_commit(self) -> bool:
-        return True
-    
+
+class RePauseCommand(BattleStatusCommand):
     async def _send_success_message(self) -> None:
         await send_comment(self.link, "УВЕДОМЛЕНИЕ\n\nБой снят с паузы")
         await send_message(JUDGE_CHAT_ID, 'Бой успешно снят с паузы!')
 
+    async def command(self) -> None:
+        pass
+
+    async def status(self) -> str:
+        return "active"
+
 
 class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-        query = text("SELECT * FROM process_add_time(:link, :time)")
-        #TODO: Разобраться с запросами к базе данных и переписать process add time в python
-        result = session.exec(query, {"link": self.link, "time": self.text})
-        result.fetchone()  # Получение результата
+        await process_add_time(self.link, timedelta(hours= int(self.text)))
         await send_comment(self.link, f"УВЕДОМЛЕНИЕ\n\nБой продлён на {self.text} часов.")
 
     async def _needs_commit(self) -> bool:
@@ -87,15 +89,13 @@ class ExtendCommand(BaseDBCommand):
 
 
 class SuspectsCommand(BaseUserDBCommand):
-
     async def _execute_command(self, session) -> None:
-        result = session.exec(select(Battles).where(Battles.judge_id == self.link))
-        links = result.fetchall()
-        suspects = "\n".join(f"https://vk.com/wall-{GROUP_ID}_{link[0]}" for link in links)
-        await send_message(self.peer_id, f"Подсудимые:\n\n{suspects}")
+        result = (await session.exec(select(Battles).where(Battles.judge_id == self.from_id))).all()
+        self.text = "\n".join(f"https://vk.com/wall-{GROUP_ID}_{link.link}" for link in result)
+
     
     async def _send_success_message(self) -> None:
-        pass
+        await send_message(self.peer_id, f"Подсудимые:\n\n{self.text}")
 
 
 class HelloCommand:

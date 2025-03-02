@@ -5,7 +5,7 @@ import pytest_asyncio
 from triada.config.settings import TEST_DATABASE_URL
 from triada.main import app
 from triada.api.db_api import override_database, get_engine, get_sessionmaker
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
 
 from triada.schemas.table_models import BattlesPlayers, Battles, Users, Judges
 
@@ -56,7 +56,7 @@ async def test_db():
     with override_database(TEST_DATABASE_URL):
         engine = get_sessionmaker()
         async with engine.begin() as session:
-            new_battle = Battles(link=123, judge_id=1, time_out=datetime.timedelta(hours=24))
+            new_battle = Battles(link=123, judge_id=2, time_out=datetime.timedelta(hours=24))
             new_user_battle = BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='fff',
                                              universe='ff', user_name='Egor', turn=0)
             new_user = Users(user_id=1, user_name='Egor')
@@ -67,6 +67,7 @@ async def test_db():
             await session.commit()
             yield
             await session.close()
+
 
 @pytest_asyncio.fixture(scope="session",autouse=True)
 async def clear_db():
@@ -83,3 +84,10 @@ async def clear_db():
         finally:
             async with engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.drop_all)  # Очистка после тестов
+
+
+async def get_battle():
+    with override_database(TEST_DATABASE_URL):
+        async_session = get_sessionmaker()
+        async with async_session() as session:
+            return (await session.exec(select(Battles).where(Battles.link == 123))).first()

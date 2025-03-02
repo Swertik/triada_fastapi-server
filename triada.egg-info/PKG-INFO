@@ -13,6 +13,7 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: annotated-types==0.7.0
 Requires-Dist: anyio==4.8.0
+Requires-Dist: asyncpg==0.30.0
 Requires-Dist: certifi==2024.12.14
 Requires-Dist: click==8.1.8
 Requires-Dist: colorama==0.4.6

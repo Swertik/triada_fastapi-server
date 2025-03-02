@@ -39,8 +39,8 @@ async def handle_message(message: dict) -> dict:
         if pattern := await parse_message(message):
             command, link, text = pattern
             command, text = command.strip().lower(), text.strip()
-
-            if message.peer_id == JUDGE_CHAT_ID and link:
+            link = 0 if link is None else link
+            if message.peer_id == JUDGE_CHAT_ID:
                 #TODO: Добавить в return выше нормальный словарь
                 await handle_battle_commands(command, link, text, message)
                 text = "Message from judges"
@@ -78,6 +78,7 @@ async def handle_battle_commands(command: str, link: int, text: str, message: Me
     """
     link = int(link)
     commands = {
+        #TODO: Добавить проверку значений в базе данных, если к ней идёт обращение
         'вердикт': lambda: VerdictCommand(link, text, message.peer_id), #TODO: Добавить обработчик вложений
         'закрыть': lambda: CloseCommand(link, text, message.peer_id),
         'открыть': lambda: OpenCommand(link, text, message.peer_id),
@@ -85,6 +86,7 @@ async def handle_battle_commands(command: str, link: int, text: str, message: Me
         'возобновить': lambda: RePauseCommand(link, text, message.peer_id),
         'продление': lambda: ExtendCommand(link, text, message.peer_id),
         'подсудимые': lambda: SuspectsCommand(message.peer_id, message.from_id)
+        #TODO: Добавить команду оценки боя
     }
 
     if command_creator := commands.get(command.lower()):
@@ -100,7 +102,7 @@ async def handle_battle_commands(command: str, link: int, text: str, message: Me
 async def handle_user_commands(command: str, message: Message) -> None:
     params = [message.peer_id, message.from_id]
     commands = {
-        'мои бои': lambda: MyBattlesCommand(*params),  # TODO: Добавить обработчик вложений
+        'мои бои': lambda: MyBattlesCommand(*params),
         'бои': lambda: BattlesCommand(*params),
         'команды': lambda: CommandsCommand(*params),
         'моя стата': lambda: MyStatCommand(*params),

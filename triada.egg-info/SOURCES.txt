@@ -21,5 +21,8 @@ triada/config/settings.py
 triada/config/vk_types.py
 triada/utils/__init__.py
 triada/utils/cache.py
+triada/utils/celery_worker.py
+triada/utils/celeryconfig.py
+triada/utils/db_commands.py
 triada/utils/exceptions.py
 triada/utils/patterns.py

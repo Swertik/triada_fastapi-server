@@ -31,7 +31,7 @@ async def send_message(peer_id: int, text: str, attachments=None) -> dict:
                 "access_token": GROUP_TOKEN,  # Токен сообщества
                 "peer_id": peer_id,
                 "message": text,
-                "random_id": randint(1, 1000000000),  # Уникальный идентификатор (можно использовать random.randint)
+                "random_id": randint(1,1000000),  # Уникальный идентификатор (можно использовать random.randint)
                 "v": "5.199",     # Версия API (актуальная)
                 "attachment": attachments
             }

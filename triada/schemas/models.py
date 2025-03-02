@@ -24,3 +24,10 @@ class Comment(BaseModel):
     date: datetime = Field(default=datetime.now())
     from_id: int
     post_id: int
+
+
+class BattleUsers(BaseModel):
+    user_id: int = Field(default=None)
+    user_name: str
+    character_name: str
+    universe_name: str

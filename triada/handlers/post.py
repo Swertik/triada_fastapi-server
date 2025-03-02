@@ -14,8 +14,7 @@ async def handle_post(wall_object: dict) -> None:
     """
     wall_object = Post(**wall_object)
     if BATTLE_PLAYERS_PATTERN.findall(wall_object.text):
-            result = await process_battle_transaction(text=wall_object.text, post_id=wall_object.id)
-            await send_message(peer_id=JUDGE_CHAT_ID, text=f'Пост под судейством @id{result}(этого судьи)')
+            await process_battle_transaction(text=wall_object.text, post_id=wall_object.id)
     return
 
 

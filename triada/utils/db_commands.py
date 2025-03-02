@@ -1,25 +1,29 @@
 from datetime import datetime, timedelta
-
+from typing import List
 from sqlmodel import select
-
 from triada.api.db_api import get_sessionmaker
-from triada.schemas.table_models import Judges, Battles, BattlesPlayers
+from triada.api.vk_api import send_message
+from triada.config.settings import JUDGE_CHAT_ID
+from triada.schemas.table_models import Judges, Battles, BattlesPlayers, Users
 from triada.utils.patterns import BATTLE_PLAYERS_PATTERN, BATTLE_TIME_PATTERN
+from triada.schemas.models import BattleUsers
 
+# async def process_add_users(users: List[dict]):
+#     async_engine = get_sessionmaker()
+#     async with async_engine() as async_session:
+#         new_users = [Users(i['user_id'], i[]) for i in users]
 
-async def process_battle_transaction(  # Вместо JSONB передаем список словарей
+async def process_battle_transaction(
         post_id: int,
         text: str
 ):
     players = BATTLE_PLAYERS_PATTERN.findall(text)
     time_out_hours = int(BATTLE_TIME_PATTERN.search(text)[1])
-    player_data = [{'user_id': int(i[0]), 'user_name': i[1], 'character': i[2], 'universe': i[3]} for i in players]
+    player_data = [BattleUsers(user_id=int(i[0]), user_name=i[1], character_name=i[2], universe_name= i[3]) for i in players]
+    # 1. Определяем id игроков
+    users_ids = [int(i[0]) for i in players]
     async_engine = get_sessionmaker()
     async with async_engine() as async_session:
-        # 1. Определяем id игроков
-        users_ids = [int(i[0]) for i in players]
-
-
         # 2. Выбираем судью с минимальным активными битвами и он не игрок
 
         selected_judge: Judges = (await async_session.exec(
@@ -43,10 +47,10 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
         # 3. Создаём записи игроков
         for index, player in enumerate(player_data):
             battle_player = BattlesPlayers(
-                user_id=player['user_id'],
-                user_name=player['user_name'],
-                character=player['character'],
-                universe=player['universe'],
+                user_id=player.user_id,
+                user_name=player.user_name,
+                character=player.character_name,
+                universe=player.universe_name,
                 turn=index,
                 link=post_id
             )
@@ -66,4 +70,17 @@ async def process_battle_transaction(  # Вместо JSONB передаем с�
 
         # Коммитим все изменения
         await async_session.commit()
-        return selected_judge.judge_id
+        await send_message(peer_id=JUDGE_CHAT_ID, text=f'Пост под судейством @id{selected_judge.judge_id}(этого судьи)')
+        return {"response": "ok"}
+
+
+async def process_add_time(
+    link: int,
+    hours: timedelta
+):
+    async_engine = get_sessionmaker()
+    async with async_engine() as async_session:
+        battle: BattlesPlayers = (await async_session.exec(select(BattlesPlayers).where(Battles.link == link))).first()
+        battle.time_out += hours
+        await async_session.commit()
+    return {"response": "ok"}
