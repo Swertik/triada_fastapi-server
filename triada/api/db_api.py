@@ -39,12 +39,10 @@ def get_sessionmaker():
 
 # Функция для получения сессии
 async def get_session() -> AsyncSession:
-    async_session = get_sessionmaker()
-    async with async_session() as session:
+    async with get_sessionmaker()() as session:
         yield session
 
 # Функция для инициализации базы данных
 async def init_db():
-    engine = get_engine()
-    async with engine.begin() as conn:
+    async with get_engine().begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)

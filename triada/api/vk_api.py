@@ -67,6 +67,20 @@ async def send_comment(post_id: int, text: str, attachments=None) -> dict:
     return response.json()
 
 
+async def delete_comment(comment_id: int) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.vk.com/method/wall.deleteComment",
+            params={
+                "owner_id": -GROUP_ID,
+                "access_token": GROUP_TOKEN,
+                "comment_id": comment_id,
+                "v": "5.199",
+            }
+        )
+
+    return response.json()
+
 async def get_upload_server(group_id, album_id: int) -> dict:
     """
     Получает URL для загрузки фотографий

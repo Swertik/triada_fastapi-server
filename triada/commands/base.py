@@ -60,8 +60,7 @@ class BaseDBCommand(ABC):
         """
         Выполняет команду с обработкой ошибок
         """
-        async_session = get_sessionmaker()
-        async with async_session() as session:
+        async with get_sessionmaker()() as session:
             try:
                 await self._execute_command(session)
                 if await self._needs_commit():
@@ -124,8 +123,7 @@ class BaseUserDBCommand(ABC):
         """
         Выполняет команду с обработкой ошибок
         """
-        async_session = get_sessionmaker()
-        async with async_session() as session:
+        async with get_sessionmaker()() as session:
             try:
                 await self._execute_command(session)
                 if await self._needs_commit():

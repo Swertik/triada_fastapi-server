@@ -1,13 +1,7 @@
 from datetime import timedelta
-
 import pytest
 from unittest.mock import patch, call, ANY
-import difflib
-import pprint
-
-import pytest_asyncio
 from sqlalchemy import select
-
 from triada.handlers.message import handle_message
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.table_models import Battles, BattlesPlayers
@@ -44,7 +38,7 @@ class TestMessage:
                                 call('https://api.vk.com/method/messages.send', 
                                      params={'access_token': ANY, 
                                              'peer_id': 2000000002, 
-                                             'message': 'Комментарий в пост размещен!', 
+                                             'message': 'Комментарий в пост размещен!',
                                              'random_id': ANY, 
                                              'v': '5.199', 
                                              'attachment': None})]

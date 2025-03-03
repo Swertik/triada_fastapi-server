@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from sqlmodel import select
 
@@ -16,13 +18,22 @@ from triada.utils.db_commands import process_battle_transaction
 
 
 CONFIRM_CODE = "c2edaf9e"
-
+all_battles = ()
 
 app = FastAPI()
+
+@asynccontextmanager
+async def lifespan():
+    global all_battles
+    async with get_sessionmaker()() as session:
+        all_battles = (await session.exec(select(Battles).where(Battles.status != 'closed'))).all()
+    yield
+    logger.info("app closing")
 
 @app.get("/")
 async def root():
     return PlainTextResponse("Hello World!")
+
 
 @app.post("/new_confirm_code")
 def new_confirm_code(confirm_code: str):
@@ -44,18 +55,13 @@ async def post_to_battles(post_id: int):
 
 @app.get("/judges")
 async def get_judges():
-
-    session = get_sessionmaker()
-    async with session() as async_session:
-        judges = (await async_session.exec(select(Judges))).all()
+    async with get_sessionmaker()() as session:
+        judges = (await session.exec(select(Judges))).all()
     return {"battles": judges}
 
 
 @app.get("/battles")
 async def get_battles():
-    session = get_sessionmaker()
-    async with session() as async_session:
-        all_battles = (await async_session.exec(select(Battles).where(Battles.status != 'closed'))).all()
     return {"battles": all_battles}
 
 
@@ -69,11 +75,9 @@ async def callback(data: dict):
         await handle_message(data["object"]["message"])
 
     elif data["type"] == VkBotEventType.WALL_POST_NEW:
-        pass
         await handle_post(data["object"])
 
-    elif data["type"] == VkBotEventType.WALL_REPLY_NEW:
-        pass
+    elif data["type"] == VkBotEventType.WALL_REPLY_NEW and data['object']['post_id'] in [i.link for i in all_battles]:
         await handle_reply(data["object"])
 
     return PlainTextResponse("ok")

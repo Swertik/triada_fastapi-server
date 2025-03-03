@@ -9,22 +9,22 @@ from sqlmodel import SQLModel, select
 
 from triada.schemas.table_models import BattlesPlayers, Battles, Users, Judges
 
+print("pytest_assertrepr_compare is active!")
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_assertrepr_compare(left, right):
-    if isinstance(left, list) and isinstance(right, list):
+    if isinstance(left, list):
         def clean_token(call_obj):
             if isinstance(call_obj, tuple) and 'params' in call_obj[1]:
                 call_obj[1]['params']['access_token'] = "<HIDDEN>"
             return call_obj
 
         left_clean = [clean_token(c) for c in left]
-        right_clean = [clean_token(c) for c in right]
 
         return [
             "Comparison failed, but access_token are hidden:",
             f"  Left:  {left_clean}",
-            f"  Right: {right_clean}"
+            f"  Right: {right}"
         ]
 
 app.dependency_overrides = {}
@@ -45,8 +45,7 @@ async def mock_vk_client():
 async def db_session():
     """Создаёт сессию БД для тестов и откатывает все изменения после каждого теста"""
     with override_database(TEST_DATABASE_URL):
-        async_session = get_sessionmaker()
-        async with async_session() as session:
+        async with get_sessionmaker()() as session:
             yield session
             await session.close()
 
@@ -54,8 +53,8 @@ async def db_session():
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def test_db():
     with override_database(TEST_DATABASE_URL):
-        engine = get_sessionmaker()
-        async with engine.begin() as session:
+        async_session = get_sessionmaker()
+        async with async_session() as session:
             new_battle = Battles(link=123, judge_id=2, time_out=datetime.timedelta(hours=24))
             new_user_battle = BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='fff',
                                              universe='ff', user_name='Egor', turn=0)
@@ -88,6 +87,5 @@ async def clear_db():
 
 async def get_battle():
     with override_database(TEST_DATABASE_URL):
-        async_session = get_sessionmaker()
-        async with async_session() as session:
+        async with get_sessionmaker()() as session:
             return (await session.exec(select(Battles).where(Battles.link == 123))).first()

@@ -22,8 +22,7 @@ async def process_battle_transaction(
     player_data = [BattleUsers(user_id=int(i[0]), user_name=i[1], character_name=i[2], universe_name= i[3]) for i in players]
     # 1. Определяем id игроков
     users_ids = [int(i[0]) for i in players]
-    async_engine = get_sessionmaker()
-    async with async_engine() as async_session:
+    async with get_sessionmaker()() as async_session:
         # 2. Выбираем судью с минимальным активными битвами и он не игрок
 
         selected_judge: Judges = (await async_session.exec(
@@ -78,8 +77,7 @@ async def process_add_time(
     link: int,
     hours: timedelta
 ):
-    async_engine = get_sessionmaker()
-    async with async_engine() as async_session:
+    async with get_sessionmaker()() as async_session:
         battle: BattlesPlayers = (await async_session.exec(select(BattlesPlayers).where(Battles.link == link))).first()
         battle.time_out += hours
         await async_session.commit()

@@ -24,6 +24,7 @@ class Comment(BaseModel):
     date: datetime = Field(default=datetime.now())
     from_id: int
     post_id: int
+    reply_to_user: Optional[int] = None
 
 
 class BattleUsers(BaseModel):
