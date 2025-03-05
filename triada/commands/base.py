@@ -130,7 +130,7 @@ class BaseUserDBCommand(ABC):
                     await session.commit()
                 await self._send_success_message()
             except Exception as e:
-                text = f"{e}"
+                text = f"Ошибка: {e}"
                 logger.error(text)
                 if await self._needs_commit():
                     await session.rollback()

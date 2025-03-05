@@ -27,7 +27,7 @@ async def post_test(post: dict, called: bool = True, mock_vk_client = None):
 
 class TestPost:
     @pytest.mark.asyncio
-    async def test_post(self, mock_vk_client, db_session):
+    async def test_post(self, mock_vk_client_factory, db_session):
         post = await post_test({
             "text": """🗡 • Тессеракт • 🗡
 🏹 • ПТБ: Поединок • 🛡
@@ -68,7 +68,7 @@ V. ⚙ — Условия сражения — 🔧 :
 • Время на пост: 24 часа •
 • Порядок действий: [id456507851|Дейдара] -> [id736580398|Киллер Би] •""",
             "id": 124 # Не менять
-        }, called=True, mock_vk_client=mock_vk_client)
+        }, called=True, mock_vk_client=mock_vk_client_factory())
 
 
         assert post == [call('https://api.vk.com/method/messages.send', params={

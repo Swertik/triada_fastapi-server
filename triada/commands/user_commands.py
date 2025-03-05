@@ -78,11 +78,11 @@ class MyStatCommand(BaseUserDBCommand):
             self.text = f"""\
 Ваша статистика:
 
-Количество боев: {sum([user.wins, user.technical_wins, user.loses, user.technical_loses])}
+Количество боев: {sum([user.wins, user.technical_wins, user.losses, user.technical_losses])}
 Количество побед: {user.wins}
 Количество технических побед: {user.technical_wins}
-Количество поражений: {user.loses}
-Количество технических поражений: {user.technical_loses}
+Количество поражений: {user.losses}
+Количество технических поражений: {user.technical_losses}
 Ваш ММР: {user.mmr}
 Фрагменты побед: {user.fragments_of_victories}
 Фрагменты величия: {user.fragments_of_greatness}

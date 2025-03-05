@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 from unittest.mock import AsyncMock
 import pytest
@@ -10,6 +11,7 @@ from sqlmodel import SQLModel, select
 from triada.schemas.table_models import BattlesPlayers, Battles, Users, Judges
 
 print("pytest_assertrepr_compare is active!")
+
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_assertrepr_compare(left, right):
@@ -31,23 +33,26 @@ app.dependency_overrides = {}
 
 
 @pytest_asyncio.fixture
-async def mock_vk_client():
-    mock_response = AsyncMock()
-    mock_response.json.return_value = {"response": 1234567}
+async def mock_vk_client_factory():
+    def mock_vk_client():
+        mock_response = AsyncMock()
+        mock_response.json.return_value = {"response": 1234567}
 
-    mock_client = AsyncMock()
-    mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
+        mock_client = AsyncMock()
+        mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
 
-    return mock_client
-
+        return mock_client
+    return mock_vk_client
 
 @pytest_asyncio.fixture
 async def db_session():
     """Создаёт сессию БД для тестов и откатывает все изменения после каждого теста"""
     with override_database(TEST_DATABASE_URL):
         async with get_sessionmaker()() as session:
-            yield session
-            await session.close()
+            try:
+                yield session
+            finally:
+                await session.close()
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
@@ -56,13 +61,20 @@ async def test_db():
         async_session = get_sessionmaker()
         async with async_session() as session:
             new_battle = Battles(link=123, judge_id=2, time_out=datetime.timedelta(hours=24))
-            new_user_battle = BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='fff',
-                                             universe='ff', user_name='Egor', turn=0)
-            new_user = Users(user_id=1, user_name='Egor')
+
+            new_users = [Users(user_id=1, user_name='Egor'),
+                         Users(user_id=2, user_name='Asya'),
+                         Users(user_id=3, user_name='Kiz')]
+            new_users_battles = [BattlesPlayers(user_id=1, link=123, time_out=datetime.datetime.now(), character='1',
+                                                universe='ff', user_name='Egor', turn=0),
+                                 BattlesPlayers(user_id=2, link=123, character='2',universe='ff', user_name='Asya', turn=1),
+                                 BattlesPlayers(user_id=3, link=123, character='3',universe='ff', user_name='Kiz', turn=2)]
             new_judges = [Judges(judge_id=456507851), Judges(judge_id=2, active_battles=1)]
 
             session.add_all(new_judges)
-            session.add_all([new_user_battle, new_battle, new_user])
+            session.add_all(new_users)
+            session.add_all(new_users_battles)
+            session.add(new_battle)
             await session.commit()
             yield
             await session.close()
@@ -84,8 +96,3 @@ async def clear_db():
             async with engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.drop_all)  # Очистка после тестов
 
-
-async def get_battle():
-    with override_database(TEST_DATABASE_URL):
-        async with get_sessionmaker()() as session:
-            return (await session.exec(select(Battles).where(Battles.link == 123))).first()

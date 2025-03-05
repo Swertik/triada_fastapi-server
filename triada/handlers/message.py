@@ -1,11 +1,14 @@
+from sqlalchemy.orm.sync import update
+
 from triada.commands.user_commands import MyBattlesCommand, BattlesCommand, CommandsCommand, MyStatCommand
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.models import Message
 from triada.utils.patterns import MESSAGE_PATTERN
 from triada.config.logg import logger
-from triada.commands.judje_commands import VerdictCommand, CloseCommand, OpenCommand, PauseCommand, RePauseCommand, \
-    ExtendCommand, SuspectsCommand
+from triada.commands.judge_commands import VerdictCommand, CloseCommand, OpenCommand, PauseCommand, RePauseCommand, \
+    ExtendCommand, SuspectsCommand, GradeActivateCommand, update_mmr
 from typing import Optional, Tuple
+from triada.utils.redis_client import redis_client
 
 
 async def handle_message(message: dict) -> dict:
@@ -33,6 +36,8 @@ async def handle_message(message: dict) -> dict:
     text = "Not a command"
     command = None
 
+
+
     if message.text.startswith("."):
         logger.info(f"Received message: {message}")
 
@@ -51,6 +56,15 @@ async def handle_message(message: dict) -> dict:
 
             else:
                 text = "Message from ?"
+    if not command:
+        user = f"user:{message.from_id}:state"
+        state = await redis_client.get(user)
+        if state.startswith("waiting for grade"):
+            await redis_client.delete(user)
+            data = await redis_client.get(user+':data')
+            await update_mmr(message.text, data, int(state.split(' ')[-1]))
+            text = "Update of mmr"
+
 
     return {'response': 'ok',
             'status': 200,
@@ -85,7 +99,8 @@ async def handle_battle_commands(command: str, link: int, text: str, message: Me
         'пауза': lambda: PauseCommand(link, text, message.peer_id),
         'возобновить': lambda: RePauseCommand(link, text, message.peer_id),
         'продление': lambda: ExtendCommand(link, text, message.peer_id),
-        'подсудимые': lambda: SuspectsCommand(message.peer_id, message.from_id)
+        'подсудимые': lambda: SuspectsCommand(message.peer_id, message.from_id),
+        'оценка': lambda: GradeActivateCommand(message.peer_id, message.from_id, link)
         #TODO: Добавить команду оценки боя
     }
 

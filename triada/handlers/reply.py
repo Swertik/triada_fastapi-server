@@ -25,6 +25,6 @@ async def handle_reply(reply_object):
                 #TODO: Обновление времени
             return 2
         else:
-            await delete_comment(1)
+            await delete_comment(reply_object.id)
             return
             #TODO: Удаление коммента

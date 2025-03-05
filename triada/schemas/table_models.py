@@ -23,8 +23,8 @@ class Users(SQLModel, table=True):
     user_name: str
     wins: int = Field(default=0)
     technical_wins: int = Field(default=0)
-    loses: int = Field(default=0)
-    technical_loses: int = Field(default=0)
+    losses: int = Field(default=0)
+    technical_losses: int = Field(default=0)
     mmr: int = Field(default=100)
     fragments_of_victories: int = Field(default=0)
     fragments_of_greatness: int = Field(default=0)

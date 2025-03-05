@@ -1,14 +1,21 @@
 """
 Реализации команд для судьи
 """
-from asyncpg.pgproto.pgproto import timedelta
+import base64
+from typing import List, Tuple
 
+from asyncpg.pgproto.pgproto import timedelta
+from tinycss2 import serialize
+
+from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
 from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand, BattleStatusCommand
-from triada.schemas.table_models import Battles
+from triada.schemas.table_models import Battles, BattlesPlayers, Users
 from sqlmodel import select, text
 from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 from triada.utils.db_commands import process_add_time
+from triada.utils.redis_client import redis_client
+import pickle
 
 JUDGE_COMMANDS = [
     "вердикт",
@@ -78,13 +85,18 @@ class RePauseCommand(BattleStatusCommand):
 
 class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-        await process_add_time(self.link, timedelta(hours= int(self.text)))
-        await send_comment(self.link, f"УВЕДОМЛЕНИЕ\n\nБой продлён на {self.text} часов.")
+
+            battle: BattlesPlayers = (
+            await session.exec(select(BattlesPlayers).where(Battles.link == self.link))).first()
+            battle.time_out += timedelta(hours=24)
+            await session.commit()
+
 
     async def _needs_commit(self) -> bool:
         return True
 
     async def _send_success_message(self) -> None:
+        await send_comment(self.link, f"УВЕДОМЛЕНИЕ\n\nБой продлён на {self.text} часов.")
         await send_message(JUDGE_CHAT_ID, 'В бою успешно проведено продление!')
 
 
@@ -104,3 +116,47 @@ class HelloCommand:
 
     async def execute(self) -> None:
         await send_message(self.peer_id, 'Привет!')
+
+class GradeActivateCommand(BaseUserDBCommand):
+    async def _execute_command(self, session) -> None:
+        players = (await session.exec(select(BattlesPlayers).where(BattlesPlayers.link == self.link).order_by(BattlesPlayers.turn))).all()
+        self.text = "Игроки:\n" + "\n".join([f"@id{i.user_id}({i.user_name})" for i in players])
+        users = (await session.exec(select(Users).where(Users.user_id.in_([i.user_id for i in players])))).all()
+        serialized_data = pickle.dumps(users)
+        encoded_str = base64.b64encode(serialized_data).decode('utf-8')
+        await redis_client.set(f"user:{self.from_id}:state", f"waiting for grade {self.link}")
+        await redis_client.set(f"user:{self.from_id}:state:data", encoded_str)
+
+
+    async def _send_success_message(self) -> None:
+        await send_message(self.peer_id, self.text)
+
+
+async def update_mmr(mmr, data, link):
+    mmr: List = mmr.split('\n')
+    data: Tuple[Users] = pickle.loads(base64.b64decode(data))
+    if len(mmr) < len(data):
+        await send_message(JUDGE_CHAT_ID, "Вы не указали достаточно информации!")
+        return
+    for i,user_mmr in enumerate(mmr):
+        user_mmr = user_mmr.split(': ')
+        user = data[i]
+        match user_mmr[0].lower():
+            case 'победа':
+                user.wins += 1
+            case 'поражение':
+                user.losses += 1
+            case 'техническая победа':
+                user.technical_wins += 1
+            case 'техническое поражение':
+                user.technical_losses += 1
+            case _:
+                await send_message(JUDGE_CHAT_ID, "Вы не указали один из аргументов!")
+                return
+        user.mmr += int(user_mmr[1])
+    await send_message(JUDGE_CHAT_ID, "Оценка успешно добавлена!")
+    async with get_sessionmaker()() as session:
+        session.add_all(data)
+        await session.commit()
+    await close_comments(link)
+    return
