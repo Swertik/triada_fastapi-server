@@ -84,7 +84,7 @@ class RePauseCommand(BattleStatusCommand):
 
 class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-        await process_add_time(self.link, timedelta(hours=self.text))
+        await process_add_time(self.link, timedelta(hours=int(self.text)))
 
 
     async def _needs_commit(self) -> bool:
