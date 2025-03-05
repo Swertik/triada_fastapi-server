@@ -79,3 +79,4 @@ jobs:
             GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
             MY_TOKEN=${{ secrets.MY_TOKEN }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
