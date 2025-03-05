@@ -5,13 +5,12 @@ import base64
 from typing import List, Tuple
 
 from asyncpg.pgproto.pgproto import timedelta
-from tinycss2 import serialize
 
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message, send_comment, close_comments, open_comments
 from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand, BattleStatusCommand
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
-from sqlmodel import select, text
+from sqlmodel import select
 from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 from triada.utils.db_commands import process_add_time
 from triada.utils.redis_client import redis_client
@@ -85,11 +84,7 @@ class RePauseCommand(BattleStatusCommand):
 
 class ExtendCommand(BaseDBCommand):
     async def _execute_command(self, session) -> None:
-
-            battle: BattlesPlayers = (
-            await session.exec(select(BattlesPlayers).where(Battles.link == self.link))).first()
-            battle.time_out += timedelta(hours=24)
-            await session.commit()
+        await process_add_time(self.link, timedelta(hours=self.text))
 
 
     async def _needs_commit(self) -> bool:
