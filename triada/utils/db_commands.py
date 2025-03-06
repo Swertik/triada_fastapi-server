@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
+
+from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message
@@ -19,6 +21,7 @@ async def process_battle_transaction(
 ):
     players = BATTLE_PLAYERS_PATTERN.findall(text)
     time_out_hours = int(BATTLE_TIME_PATTERN.search(text)[1])
+    users = [Users(user_id=int(i[0]), user_name=i[1]) for i in players]
     player_data = [BattleUsers(user_id=int(i[0]), user_name=i[1], character_name=i[2], universe_name= i[3]) for i in players]
     # 1. Определяем id игроков
     users_ids = [int(i[0]) for i in players]
@@ -66,6 +69,11 @@ async def process_battle_transaction(
 
         # 5. Обновляем счетчик активных битв у судьи
         selected_judge.active_battles += 1
+
+        # 6. Добавляем всех пользователей
+        stmt = insert(Users).values([user.model_dump() for user in users])
+        stmt = stmt.on_conflict_do_nothing(index_elements=["user_id"])
+        await async_session.execute(stmt)
 
         # Коммитим все изменения
         await async_session.commit()
