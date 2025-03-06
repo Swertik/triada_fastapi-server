@@ -32,10 +32,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
-RUN --mount=type=secret,id=group_token cat /run/secrets/group_token > /dev/null
-RUN --mount=type=secret,id=my_token cat /run/secrets/my_token > /dev/null
-RUN --mount=type=secret,id=database_url cat /run/secrets/database_url > /dev/null
-RUN --mount=type=secret,id=redis_host cat /run/secrets/redis_host > /dev/null
+RUN --mount=type=secret,id=group_token cat /app/triada/config/secrets/group_token > /dev/null
+RUN --mount=type=secret,id=my_token cat /app/triada/config/secrets/my_token > /dev/null
+RUN --mount=type=secret,id=database_url cat /app/triada/config/secrets/database_url > /dev/null
+RUN --mount=type=secret,id=redis_host cat /app/triada/config/secrets/redis_host > /dev/null
 
 # Переключение на непривилегированного пользователя
 USER appuser

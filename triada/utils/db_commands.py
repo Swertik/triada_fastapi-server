@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List
 
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select
