@@ -59,7 +59,7 @@ async def handle_message(message: dict) -> dict:
     if not command:
         user = f"user:{message.from_id}:state"
         state = await redis_client.get(user)
-        if state.startswith("waiting for grade"):
+        if state and state.startswith("waiting for grade"):
             await redis_client.delete(user)
             data = await redis_client.get(user+':data')
             await update_mmr(message.text, data, int(state.split(' ')[-1]))

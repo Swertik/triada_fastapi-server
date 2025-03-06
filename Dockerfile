@@ -52,6 +52,9 @@ ENV GROUP_TOKEN=$GROUP_TOKEN
 ENV MY_TOKEN=$MY_TOKEN
 ENV DATABASE_URL=$DATABASE_URL
 
+
+RUN apt-get update && apt-get install -y redis-tools
+
 # Expose the port that the application listens on.
 EXPOSE 8080
 

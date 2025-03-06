@@ -27,10 +27,11 @@ JUDGE_COMMANDS = [
 
 class VerdictCommand(BaseCommand):
     async def _execute_command(self) -> None:
-        # TODO: Добавить вложения
-        await send_comment(self.link, self.text)
+        pass
+
 
     async def _send_success_message(self) -> None:
+        await send_comment(self.link, self.text)
         await send_message(self.peer_id, 'Комментарий в пост размещен!')
 
 
@@ -133,7 +134,7 @@ async def update_mmr(mmr, data, link):
     if len(mmr) < len(data):
         await send_message(JUDGE_CHAT_ID, "Вы не указали достаточно информации!")
         return
-    for i,user_mmr in enumerate(mmr):
+    for i, user_mmr in enumerate(mmr):
         user_mmr = user_mmr.split(': ')
         user = data[i]
         match user_mmr[0].lower():
