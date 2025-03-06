@@ -4,7 +4,7 @@ import uvicorn
 from sqlmodel import select
 
 from triada.api.vk_api import get_post_by_id
-from triada.run.settings import GROUP_ID
+from triada.config.settings import GROUP_ID
 from triada.config.vk_types import  VkBotEventType
 from triada.handlers.message import handle_message
 from triada.handlers.post import handle_post

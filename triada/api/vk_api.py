@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import httpx
-from triada.run.settings import GROUP_TOKEN, MY_TOKEN, GROUP_ID
+from triada.config.settings import GROUP_TOKEN, MY_TOKEN, GROUP_ID
 import asyncio
 from random import randint
 

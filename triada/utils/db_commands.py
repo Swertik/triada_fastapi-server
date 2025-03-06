@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import send_message
-from triada.run.settings import JUDGE_CHAT_ID
+from triada.config.settings import JUDGE_CHAT_ID
 from triada.schemas.table_models import Judges, Battles, BattlesPlayers, Users
 from triada.utils.patterns import BATTLE_PLAYERS_PATTERN, BATTLE_TIME_PATTERN
 from triada.schemas.models import BattleUsers

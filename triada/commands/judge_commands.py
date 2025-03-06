@@ -11,7 +11,7 @@ from triada.api.vk_api import send_message, send_comment, close_comments, open_c
 from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand, BattleStatusCommand
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
 from sqlmodel import select
-from triada.run.settings import JUDGE_CHAT_ID, GROUP_ID
+from triada.config.settings import JUDGE_CHAT_ID, GROUP_ID
 from triada.utils.db_commands import process_add_time
 from triada.utils.redis_client import redis_client
 import pickle

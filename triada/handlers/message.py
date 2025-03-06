@@ -1,5 +1,7 @@
+from sqlalchemy.orm.sync import update
+
 from triada.commands.user_commands import MyBattlesCommand, BattlesCommand, CommandsCommand, MyStatCommand
-from triada.run.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
+from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.models import Message
 from triada.utils.patterns import MESSAGE_PATTERN
 from triada.config.logg import logger

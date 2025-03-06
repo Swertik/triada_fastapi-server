@@ -1,9 +1,10 @@
+import asyncio
 from datetime import timedelta
 import pytest
 from unittest.mock import patch, call, ANY
 from sqlalchemy import select
 from triada.handlers.message import handle_message
-from triada.run.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
+from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.table_models import BattlesPlayers, Battles, Users
 
 
