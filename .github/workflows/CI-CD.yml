@@ -62,7 +62,7 @@ jobs:
         TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
         REDIS_HOST: "localhost"
 
-  deploy:
+deploy:
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -89,37 +89,22 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create secret directory
-        run: |
-          mkdir -p run/secrets
-
-      - name: Create secret files
-        run: |
-            echo "${{ secrets.GROUP_TOKEN }}" > run/secrets/group_token
-            echo "${{ secrets.MY_TOKEN }}" > run/secrets/my_token
-            echo "${{ secrets.DATABASE_URL }}" > run/secrets/database_url
-            echo "${{ secrets.REDIS_HOST }}" > run/secrets/redis_host
-
-
       - name: Build and push securely
         run: |
           export DOCKER_BUILDKIT=1
-          docker build --secret id=group_token,env=GROUP_TOKEN,src=run/secrets/group_token \
-                       --secret id=my_token,env=MY_TOKEN,src=run/secrets/my_token \
-                       --secret id=database_url,env=DATABASE_URL,src=run/secrets/database_url \
-                       -t docker.io/swertik/triada_fastapi-server:latest .
-          docker push docker.io/swertik/triada_fastapi-server:latest
-
+          docker build --secret id=group_token,env=GROUP_TOKEN \
+                       --secret id=my_token,env=MY_TOKEN \
+                       --secret id=database_url,env=DATABASE_URL \
+                       --secret id=redis_host,env=REDIS_HOST \
+                       -t docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
+          docker push docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
       - name: Check for secrets in logs
         run: |
           if grep -r "${{ secrets.GROUP_TOKEN }}" logs/; then exit 1; fi
