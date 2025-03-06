@@ -57,7 +57,7 @@ jobs:
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
         DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
         TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
-        REDIS_HOST: ${{ secrets.REDIS_HOST }}
+        REDIS_HOST: "localhost"
 
   deploy:
     runs-on: ubuntu-latest
