@@ -25,6 +25,8 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+RUN mkdir -p /app/triada/config/secrets
+
 COPY . .
 
 # Установка Python-зависимостей
