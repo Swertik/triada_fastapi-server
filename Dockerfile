@@ -23,7 +23,7 @@ RUN adduser \
     --shell "/sbin/nologin" \
     --no-create-home \
     --uid "${UID}" \
-    appuser \
+    appuser
 
 # Установка Python-зависимостей
 RUN --mount=type=cache,target=/root/.cache/pip \
