@@ -25,35 +25,23 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-RUN mkdir -p /run/secrets
-
-COPY . .
-
 # Установка Python-зависимостей
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
-# Установка секретов
-RUN --mount=type=secret,id=group_token \
-    --mount=type=secret,id=my_token \
-    --mount=type=secret,id=database_url \
-    --mount=type=secret,id=redis_host \
-    cat /run/secrets/group_token > /dev/null && \
-    cat /run/secrets/my_token > /dev/null && \
-    cat /run/secrets/database_url > /dev/null && \
-    cat /run/secrets/redis_host > /dev/null
-
-
-ENV GROUP_TOKEN_FILE=/run/secrets/group_token
-ENV MY_TOKEN_FILE=/run/secrets/my_token
-ENV DATABASE_URL_FILE=/run/secrets/database_url
-ENV REDIS_HOST_FILE=/run/secrets/redis_host
-
 # Переключение на непривилегированного пользователя
 USER appuser
 
 # Копирование кода и настройка переменных окружения
+COPY . .
+ARG GROUP_TOKEN
+ARG MY_TOKEN
+ARG DATABASE_URL
+ENV GROUP_TOKEN=$GROUP_TOKEN
+ENV MY_TOKEN=$MY_TOKEN
+ENV DATABASE_URL=$DATABASE_URL
+
 # Экспорт порта и запуск приложения
 EXPOSE 8080
 CMD uvicorn triada.main:app --host 0.0.0.0 --port 8080
