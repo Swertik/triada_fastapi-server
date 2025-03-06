@@ -32,24 +32,15 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
-RUN --mount=type=secret,id=group_token.txt cat /run/secrets/group_token.txt > /dev/null
+RUN --mount=type=secret,id=group_token cat /run/secrets/group_token > /dev/null
 RUN --mount=type=secret,id=my_token cat /run/secrets/my_token > /dev/null
+RUN --mount=type=secret,id=database_url cat /run/secrets/database_url > /dev/null
+RUN --mount=type=secret,id=redis_host cat /run/secrets/redis_host > /dev/null
 
 # Переключение на непривилегированного пользователя
 USER appuser
 
 # Копирование кода и настройка переменных окружения
-
-
-ARG GROUP_TOKEN
-ARG MY_TOKEN
-ARG DATABASE_URL
-ARG REDIS_HOST
-ENV GROUP_TOKEN=$GROUP_TOKEN
-ENV MY_TOKEN=$MY_TOKEN
-ENV DATABASE_URL=$DATABASE_URL
-ENV REDIS_HOST=$REDIS_HOST
-
 # Экспорт порта и запуск приложения
 EXPOSE 8080
 CMD uvicorn triada.main:app --host 0.0.0.0 --port 8080
