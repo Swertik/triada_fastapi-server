@@ -62,7 +62,7 @@ jobs:
         TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
         REDIS_HOST: "localhost"
 
-deploy:
+  deploy:
     runs-on: ubuntu-latest
     needs: test
     steps:
