@@ -35,10 +35,14 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     python -m pip install -r requirements.txt
 
 # Установка секретов
-RUN --mount=type=secret,id=group_token,src=run/secrets/group_token \
-    --mount=type=secret,id=my_token,src=run/secrets/my_token \
-    --mount=type=secret,id=database_url,src=run/secrets/database_url \
-    --mount=type=secret,id=redis_host,src=run/secrets/redis_host
+RUN --mount=type=secret,id=group_token \
+    --mount=type=secret,id=my_token \
+    --mount=type=secret,id=database_url \
+    --mount=type=secret,id=redis_host \
+    cat /run/secrets/group_token > /dev/null && \
+    cat /run/secrets/my_token > /dev/null && \
+    cat /run/secrets/database_url > /dev/null && \
+    cat /run/secrets/redis_host > /dev/null
 
 
 ENV GROUP_TOKEN_FILE=/run/secrets/group_token

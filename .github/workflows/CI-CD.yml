@@ -99,12 +99,17 @@ jobs:
       - name: Build and push securely
         run: |
           export DOCKER_BUILDKIT=1
-          docker build --secret id=group_token,env=GROUP_TOKEN \
-                       --secret id=my_token,env=MY_TOKEN \
-                       --secret id=database_url,env=DATABASE_URL \
-                       --secret id=redis_host,env=REDIS_HOST \
+          docker build --secret id=group_token,env=GROUP_TOKEN,src=run/secrets/group_token \
+                       --secret id=my_token,env=MY_TOKEN,src=run/secrets/my_token \
+                       --secret id=database_url,env=DATABASE_URL,src=run/secrets/database_url \
+                       --secret id=redis_host,env=REDIS_HOST,src=run/secrets/redis_host \
                        -t docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
           docker push docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+        env:
+          GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
       - name: Check for secrets in logs
         run: |
           if grep -r "${{ secrets.GROUP_TOKEN }}" logs/; then exit 1; fi
