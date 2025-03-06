@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 RUN --mount=type=secret,id=group_token,src=run/secrets/group_token \
     --mount=type=secret,id=my_token,src=run/secrets/my_token \
     --mount=type=secret,id=database_url,src=run/secrets/database_url \
-    --mount=type=secret,id=redis_host,src=run/secrets/redis_host \
+    --mount=type=secret,id=redis_host,src=run/secrets/redis_host
 
 
 ENV GROUP_TOKEN_FILE=/run/secrets/group_token
