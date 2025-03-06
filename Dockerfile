@@ -29,6 +29,7 @@ RUN adduser \
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt \
+    python -m pip install -e .
 
 
 # Переключение на непривилегированного пользователя
@@ -37,7 +38,6 @@ USER appuser
 # Копирование кода и настройка переменных окружения
 COPY . .
 
-RUN python -m pip install -e .
 
 ARG GROUP_TOKEN
 ARG MY_TOKEN
