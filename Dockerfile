@@ -43,9 +43,11 @@ RUN --mount=type=secret,id=my_token,target=/app/triada/config/secrets/my_token \
 RUN --mount=type=secret,id=database_url,target=/app/triada/config/secrets/database_url \
     cat /app/triada/config/secrets/database_url > /dev/null
 
-RUN --mount=type=secret,id=redis_host,target=/app/triada/config/secrets/redis_host \
-    cat /app/triada/config/secrets/redis_host > /dev/null
 
+ENV GROUP_TOKEN=/app/triada/config/secrets/group_token
+ENV MY_TOKEN=/app/triada/config/secrets/my_token
+ENV DATABASE_URL=/app/triada/config/secrets/database_url
+ENV REDIS_HOST='redis'
 # Переключение на непривилегированного пользователя
 USER appuser
 

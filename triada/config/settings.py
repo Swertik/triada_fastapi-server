@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from fastapi import FastAPI
 
 load_dotenv()
 
@@ -23,3 +24,12 @@ REDIS_HOST = read_secret(f"/secrets/redis_host", "REDIS_HOST")
 GROUP_ID = 229144827
 JUDGE_CHAT_ID = 2000000002
 FLOOD_CHAT_ID = 2000000001
+
+if __name__ == "__main__":
+    while True:
+
+        directory = input('Введи директорию ')
+        contents = os.listdir(directory)
+        print(f"Содержимое директории {directory}:")
+        for item in contents:
+            print(item)
