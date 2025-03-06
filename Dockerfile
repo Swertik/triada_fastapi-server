@@ -25,7 +25,7 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-RUN mkdir -p /app/triada/config/secrets
+RUN mkdir -p /run/secrets
 
 COPY . .
 
