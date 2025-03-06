@@ -74,6 +74,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Checkout репозитория
+        uses: actions/checkout@v4
+
+      - name: Проверка наличия Dockerfile
+        run: ls -lah
+
+      - name: Включить BuildKit
+        run: export DOCKER_BUILDKIT=1
+
       - name: Build and push securely
         run: |
           export DOCKER_BUILDKIT=1
