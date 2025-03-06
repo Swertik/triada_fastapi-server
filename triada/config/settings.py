@@ -1,11 +1,7 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
 
 load_dotenv()
-
-import os
-import dotenv
 
 def read_secret(filepath, env_var):
     """Читает секрет из файла или переменной окружения"""

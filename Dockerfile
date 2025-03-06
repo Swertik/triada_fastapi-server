@@ -34,17 +34,22 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+# Установка секретов
+RUN --mount=type=secret,id=group_token,src=run/secrets/group_token \
+    --mount=type=secret,id=my_token,src=run/secrets/my_token \
+    --mount=type=secret,id=database_url,src=run/secrets/database_url \
+    --mount=type=secret,id=redis_host,src=run/secrets/redis_host \
+    cat /run/secrets/group_token > /dev/null && \
+    cat /run/secrets/my_token > /dev/null && \
+    cat /run/secrets/database_url > /dev/null && \
+    cat /run/secrets/redis_host > /dev/null
 
 
-RUN cat /run/secrets/group_token > /app/triada/config/secrets/group_token && \
-    cat /run/secrets/my_token > /app/triada/config/secrets/my_token && \
-    cat /run/secrets/database_url > /app/triada/config/secrets/database_url
+ENV GROUP_TOKEN_FILE=/run/secrets/group_token
+ENV MY_TOKEN_FILE=/run/secrets/my_token
+ENV DATABASE_URL_FILE=/run/secrets/database_url
+ENV REDIS_HOST_FILE=/run/secrets/redis_host
 
-
-ENV GROUP_TOKEN=run/secrets/group_token
-ENV MY_TOKEN=run/secrets/my_token
-ENV DATABASE_URL=run/secrets/database_url
-ENV REDIS_HOST='redis'
 # Переключение на непривилегированного пользователя
 USER appuser
 
