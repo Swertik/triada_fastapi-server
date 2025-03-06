@@ -3,7 +3,6 @@ from sqlmodel import select
 from triada.api.db_api import get_sessionmaker
 from triada.api.vk_api import delete_comment
 # from triada.api.vk_api import *
-from triada.config.logg import logger
 from triada.config.settings import GROUP_ID
 from triada.schemas.models import Comment
 from triada.schemas.table_models import BattlesPlayers

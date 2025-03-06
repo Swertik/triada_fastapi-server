@@ -1,3 +1,8 @@
 /__pycache__
 /triada/config/.env
 /docker_help.txt
+/triada/config/group_token.txt
+/triada/config/run/secrets/database_url
+/triada/config/run/secrets/group_token
+/triada/config/run/secrets/my_token
+/triada/config/run/secrets/test_database_url

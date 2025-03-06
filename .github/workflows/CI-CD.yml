@@ -19,8 +19,6 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-    - uses: actions/checkout@v4
       redis:
         image: redis:latest
         ports:
@@ -30,26 +28,39 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    steps:
+    - uses: actions/checkout@v4
 
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.13"
 
+    - name: Cache Python dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          **/__pycache__
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
         pip install pytest
         pip install -e .
-    
+
+
     - name: Run tests
+      run: pytest
       env:
         GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
         DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
         TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
-      run: pytest
+        REDIS_HOST: "localhost"
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,22 +71,49 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Checkout репозитория
+        uses: actions/checkout@v4
+
+      - name: Проверка наличия Dockerfile
+        run: ls -lah
+
+      - name: Включить BuildKit
+        run: export DOCKER_BUILDKIT=1
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Create secrets directory
+        run: |
+          mkdir -p ./run/secrets
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          build-args: |
-            GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
-            MY_TOKEN=${{ secrets.MY_TOKEN }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push securely
+        run: |
+          export DOCKER_BUILDKIT=1
+          docker build --secret id=group_token,env=GROUP_TOKEN \
+                       --secret id=my_token,env=MY_TOKEN \
+                       --secret id=database_url,env=DATABASE_URL \
+                       --secret id=redis_host,env=REDIS_HOST \
+                       -t docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
+          docker push docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+        env:
+          GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      - name: Check for secrets in logs
+        run: |
+          if grep -r "${{ secrets.GROUP_TOKEN }}" logs/; then exit 1; fi

@@ -1,4 +1,3 @@
-import asyncio
 from datetime import timedelta
 import pytest
 from unittest.mock import patch, call, ANY

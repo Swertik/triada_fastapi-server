@@ -1,25 +1,20 @@
 # syntax=docker/dockerfile:1
 
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
-
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
-
 ARG PYTHON_VERSION=3.12.9
 FROM python:${PYTHON_VERSION}-slim as base
 
-# Prevents Python from writing pyc files.
+# 1. Установка системных зависимостей ДО переключения пользователя
+RUN apt-get update && \
+    apt-get install -y redis-tools && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Остальные настройки окружения
 ENV PYTHONDONTWRITEBYTECODE=1
-
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
-
 WORKDIR /app
 
-# Create a non-privileged user that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
+# Создание непривилегированного пользователя
 ARG UID=10001
 RUN adduser \
     --disabled-password \
@@ -30,30 +25,35 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
+RUN mkdir -p /run/secrets
+
+COPY . .
+
+# Установка Python-зависимостей
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
-# Switch to the non-privileged user to run the application.
+# Установка секретов
+RUN --mount=type=secret,id=group_token \
+    --mount=type=secret,id=my_token \
+    --mount=type=secret,id=database_url \
+    --mount=type=secret,id=redis_host \
+    cat /run/secrets/group_token > /dev/null && \
+    cat /run/secrets/my_token > /dev/null && \
+    cat /run/secrets/database_url > /dev/null && \
+    cat /run/secrets/redis_host > /dev/null
+
+
+ENV GROUP_TOKEN_FILE=/run/secrets/group_token
+ENV MY_TOKEN_FILE=/run/secrets/my_token
+ENV DATABASE_URL_FILE=/run/secrets/database_url
+ENV REDIS_HOST_FILE=/run/secrets/redis_host
+
+# Переключение на непривилегированного пользователя
 USER appuser
 
-# Copy the source code into the container.
-COPY . .
-
-ARG GROUP_TOKEN
-ARG MY_TOKEN
-ARG DATABASE_URL
-
-ENV GROUP_TOKEN=$GROUP_TOKEN
-ENV MY_TOKEN=$MY_TOKEN
-ENV DATABASE_URL=$DATABASE_URL
-
-# Expose the port that the application listens on.
+# Копирование кода и настройка переменных окружения
+# Экспорт порта и запуск приложения
 EXPOSE 8080
-
-# Run the application.
 CMD uvicorn triada.main:app --host 0.0.0.0 --port 8080

@@ -1,5 +1,3 @@
-from sqlalchemy.orm.sync import update
-
 from triada.commands.user_commands import MyBattlesCommand, BattlesCommand, CommandsCommand, MyStatCommand
 from triada.config.settings import JUDGE_CHAT_ID, FLOOD_CHAT_ID
 from triada.schemas.models import Message
@@ -59,7 +57,7 @@ async def handle_message(message: dict) -> dict:
     if not command:
         user = f"user:{message.from_id}:state"
         state = await redis_client.get(user)
-        if state.startswith("waiting for grade"):
+        if state and state.startswith("waiting for grade"):
             await redis_client.delete(user)
             data = await redis_client.get(user+':data')
             await update_mmr(message.text, data, int(state.split(' ')[-1]))

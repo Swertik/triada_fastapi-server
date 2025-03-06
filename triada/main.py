@@ -77,7 +77,7 @@ async def callback(data: dict):
     elif data["type"] == VkBotEventType.WALL_POST_NEW:
         await handle_post(data["object"])
 
-    elif data["type"] == VkBotEventType.WALL_REPLY_NEW and data['object']['post_id'] in [i.link for i in all_battles]:
+    elif data["type"] == VkBotEventType.WALL_REPLY_NEW:
         await handle_reply(data["object"])
 
     return PlainTextResponse("ok")

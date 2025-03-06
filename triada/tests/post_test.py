@@ -8,7 +8,7 @@ from sqlalchemy import delete
 from sqlmodel import select
 from triada.handlers.post import handle_post
 from triada.main import post_to_battles
-from triada.schemas.table_models import Battles, Judges, BattlesPlayers
+from triada.schemas.table_models import Battles, Judges, BattlesPlayers, Users
 
 
 @pytest.mark.asyncio
@@ -28,6 +28,18 @@ async def post_test(post: dict, called: bool = True, mock_vk_client = None):
 class TestPost:
     @pytest.mark.asyncio
     async def test_post(self, mock_vk_client_factory, db_session):
+        db_session.add(Users(user_id=456507851,
+                             technical_wins=0,
+                             technical_losses=0,
+                             fragments_of_victories=0,
+                             skill_rating=0,
+                             wins=0,
+                             user_name='Gene Takovic',
+                             losses=0,
+                             mmr=100,
+                             fragments_of_greatness=0))
+        await db_session.commit()
+
         post = await post_test({
             "text": """🗡 • Тессеракт • 🗡
 🏹 • ПТБ: Поединок • 🛡
@@ -71,6 +83,8 @@ V. ⚙ — Условия сражения — 🔧 :
         }, called=True, mock_vk_client=mock_vk_client_factory())
 
 
+
+
         assert post == [call('https://api.vk.com/method/messages.send', params={
             'access_token': ANY,
             'peer_id': 2000000002,
@@ -99,3 +113,25 @@ V. ⚙ — Условия сражения — 🔧 :
                                result=None,
                                user_name='Gene Takovic',
                                link=124)])
+        assert ((await db_session.exec(select(Users).
+                                      where((Users.user_id == 736580398) | (Users.user_id == 456507851)))).all() ==
+                [Users(user_id=456507851,
+                       technical_wins=0,
+                       technical_losses=0,
+                       fragments_of_victories=0,
+                       skill_rating=0,
+                       wins=0,
+                       user_name='Gene Takovic',
+                       losses=0,
+                       mmr=100,
+                       fragments_of_greatness=0),
+                 Users(user_id=736580398,
+                       technical_wins=0,
+                       technical_losses=0,
+                       fragments_of_victories=0,
+                       skill_rating=0,
+                       wins=0,
+                       user_name='Roman Borsalinovich',
+                       losses=0,
+                       mmr=100,
+                       fragments_of_greatness=0)])
