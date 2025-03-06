@@ -48,11 +48,6 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
         pip install -e .
-    - name: Save secrets to file
-      run: |
-        echo "${{ secrets.GROUP_TOKEN }}" > /tmp/secrets/group_token
-        echo "${{ secrets.MY_TOKEN }}" > /tmp/secrets/my_token
-        echo "${{ secrets.DATABASE_URL }}" > /tmp/secrets/database_url
 
 
     - name: Run tests
@@ -60,6 +55,8 @@ jobs:
       env:
         GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
 
   deploy:
     runs-on: ubuntu-latest
