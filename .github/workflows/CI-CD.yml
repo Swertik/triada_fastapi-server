@@ -12,7 +12,6 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_HOST: localhost
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
           POSTGRES_DB: test
@@ -31,20 +30,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache Python dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pip
-          **/__pycache__
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.13"
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install dependencies
       run: |
@@ -53,49 +50,34 @@ jobs:
         pip install -e .
 
     - name: Run tests
+      run: pytest
       env:
         GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
-        DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
-        TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
-      run: pytest
 
   deploy:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - name: Cache Docker Buildx
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.13"
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          build-args: |
-            GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
-            MY_TOKEN=${{ secrets.MY_TOKEN }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+      - name: Build and push securely
+        run: |
+          export DOCKER_BUILDKIT=1
+          docker build --secret id=group_token,env=GROUP_TOKEN \
+                       --secret id=my_token,env=MY_TOKEN \
+                       -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest .
+          docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest
+
+      - name: Check for secrets in logs
+        run: |
+          if grep -r "${{ secrets.GROUP_TOKEN }}" logs/; then exit 1; fi

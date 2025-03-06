@@ -32,6 +32,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+RUN --mount=type=secret,id=group_token cat /run/secrets/group_token > /dev/null
+RUN --mount=type=secret,id=my_token cat /run/secrets/my_token > /dev/null
 
 # Переключение на непривилегированного пользователя
 USER appuser
