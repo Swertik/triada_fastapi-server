@@ -93,6 +93,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create secret directory
+        run: |
+          mkdir -p run/secrets
+
       - name: Create secret files
         run: |
             echo "${{ secrets.GROUP_TOKEN }}" > run/secrets/group_token
