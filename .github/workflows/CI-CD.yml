@@ -96,10 +96,9 @@ jobs:
       - name: Build and push securely
         run: |
           export DOCKER_BUILDKIT=1
-          docker build --secret id=group_token,env=GROUP_TOKEN \
-                       --secret id=my_token,env=MY_TOKEN \
-                       --secret id=database_url,env=DATABASE_URL \
-                       --secret id=redis_host,env=REDIS_HOST \
+          docker build --secret id=group_token,env=GROUP_TOKEN, src=run/secrets/group_token \
+                       --secret id=my_token,env=MY_TOKEN, src=run/secrets/my_token \
+                       --secret id=database_url,env=DATABASE_URL, src=run/secrets/database_url \
                        -t docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
           docker push docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 

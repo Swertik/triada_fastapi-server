@@ -34,19 +34,16 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
-RUN --mount=type=secret,id=group_token,target=/app/triada/config/secrets/group_token \
-    cat /app/triada/config/secrets/group_token > /dev/null
-
-RUN --mount=type=secret,id=my_token,target=/app/triada/config/secrets/my_token \
-    cat /app/triada/config/secrets/my_token > /dev/null
-
-RUN --mount=type=secret,id=database_url,target=/app/triada/config/secrets/database_url \
-    cat /app/triada/config/secrets/database_url > /dev/null
 
 
-ENV GROUP_TOKEN=/app/triada/config/secrets/group_token
-ENV MY_TOKEN=/app/triada/config/secrets/my_token
-ENV DATABASE_URL=/app/triada/config/secrets/database_url
+RUN cat /run/secrets/group_token > /app/triada/config/secrets/group_token && \
+    cat /run/secrets/my_token > /app/triada/config/secrets/my_token && \
+    cat /run/secrets/database_url > /app/triada/config/secrets/database_url
+
+
+ENV GROUP_TOKEN=run/secrets/group_token
+ENV MY_TOKEN=run/secrets/my_token
+ENV DATABASE_URL=run/secrets/database_url
 ENV REDIS_HOST='redis'
 # Переключение на непривилегированного пользователя
 USER appuser
