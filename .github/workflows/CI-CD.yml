@@ -100,8 +100,8 @@ jobs:
                        --secret id=my_token,env=MY_TOKEN \
                        --secret id=database_url,env=DATABASE_URL \
                        --secret id=redis_host,env=REDIS_HOST \
-                       -t ghcr.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
-          docker push ghcr.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+                       -t docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .
+          docker push docker.io/${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 
       - name: Check for secrets in logs
         run: |
