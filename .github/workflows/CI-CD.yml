@@ -57,6 +57,7 @@ jobs:
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        REDIS_HOST: ${{ secrets.REDIS_HOST }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -79,6 +80,7 @@ jobs:
           docker build --secret id=group_token,env=GROUP_TOKEN \
                        --secret id=my_token,env=MY_TOKEN \
                        --secret id=database_url,env=DATABASE_URL \
+                       --secret id=redis_host,env=REDIS_HOST \
                        -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest .
           docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest
 
