@@ -55,8 +55,8 @@ jobs:
       env:
         GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
         MY_TOKEN: ${{ secrets.MY_TOKEN }}
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
+        TEST_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
         REDIS_HOST: ${{ secrets.REDIS_HOST }}
 
   deploy:
