@@ -50,9 +50,9 @@ jobs:
         pip install -e .
     - name: Save secrets to file
       run: |
-        echo "${{ secrets.GROUP_TOKEN }}" > /run/secrets/group_token
-        echo "${{ secrets.MY_TOKEN }}" > /run/secrets/my_token
-        echo "${{ secrets.DATABASE_URL }}" > /run/secrets/database_url
+        echo "${{ secrets.GROUP_TOKEN }}" > /tmp/secrets/group_token
+        echo "${{ secrets.MY_TOKEN }}" > /tmp/secrets/my_token
+        echo "${{ secrets.DATABASE_URL }}" > /tmp/secrets/database_url
 
 
     - name: Run tests
