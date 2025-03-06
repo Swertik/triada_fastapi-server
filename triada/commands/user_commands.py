@@ -2,10 +2,10 @@
 Реализации команд для пользователей
 """
 from datetime import datetime, timedelta
-from sqlmodel import Session, select
+from sqlmodel import select
 from triada.api.vk_api import send_message
-from triada.commands.base import BaseCommand, BaseDBCommand, BaseUserDBCommand, BaseUserCommand
-from triada.config.settings import GROUP_ID
+from triada.commands.base import BaseUserDBCommand, BaseUserCommand
+from triada.run.settings import GROUP_ID
 from triada.schemas.table_models import Battles, BattlesPlayers, Users
 
 

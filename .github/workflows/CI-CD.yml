@@ -48,6 +48,12 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
         pip install -e .
+    - name: Save secrets to file
+      run: |
+        echo "${{ secrets.GROUP_TOKEN }}" > /run/secrets/group_token
+        echo "${{ secrets.MY_TOKEN }}" > /run/secrets/my_token
+        echo "${{ secrets.DATABASE_URL }}" > /run/secrets/database_url
+
 
     - name: Run tests
       run: pytest
@@ -75,6 +81,7 @@ jobs:
           export DOCKER_BUILDKIT=1
           docker build --secret id=group_token,env=GROUP_TOKEN \
                        --secret id=my_token,env=MY_TOKEN \
+                       --secret id=database_url,env=DATABASE_URL \
                        -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest .
           docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest
 

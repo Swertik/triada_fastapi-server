@@ -1,5 +1,5 @@
 import redis.asyncio as redis  # Вместо aioredis
-from triada.config.settings import REDIS_HOST
+from triada.run.settings import REDIS_HOST
 import asyncio
 
 redis_client = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)

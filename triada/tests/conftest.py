@@ -1,12 +1,11 @@
-import asyncio
 import datetime
 from unittest.mock import AsyncMock
 import pytest
 import pytest_asyncio
-from triada.config.settings import TEST_DATABASE_URL
+from triada.run.settings import TEST_DATABASE_URL
 from triada.main import app
 from triada.api.db_api import override_database, get_engine, get_sessionmaker
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel
 
 from triada.schemas.table_models import BattlesPlayers, Battles, Users, Judges
 
