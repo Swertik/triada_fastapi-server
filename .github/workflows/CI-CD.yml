@@ -31,18 +31,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Cache Python dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          **/__pycache__
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.13"
-
 
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
         pip install pytest
         pip install -e .
-    
+
     - name: Run tests
       env:
         GROUP_TOKEN: ${{ secrets.GROUP_TOKEN }}
@@ -55,6 +64,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+      - name: Cache Docker Buildx
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -80,3 +97,5 @@ jobs:
             MY_TOKEN=${{ secrets.MY_TOKEN }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max

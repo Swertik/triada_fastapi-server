@@ -25,18 +25,18 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+COPY . .
+
 # Установка Python-зависимостей
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt \
-    python -m pip install -e .
+    python -m pip install -r requirements.txt
 
 
 # Переключение на непривилегированного пользователя
 USER appuser
 
 # Копирование кода и настройка переменных окружения
-COPY . .
 
 
 ARG GROUP_TOKEN
