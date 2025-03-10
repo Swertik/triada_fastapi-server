@@ -6,3 +6,5 @@
 /triada/config/run/secrets/group_token
 /triada/config/run/secrets/my_token
 /triada/config/run/secrets/test_database_url
+/secrets/
+/dump/

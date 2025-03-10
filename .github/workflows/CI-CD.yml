@@ -69,13 +69,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          build-args: |
-            GROUP_TOKEN=${{ secrets.GROUP_TOKEN }}
-            MY_TOKEN=${{ secrets.MY_TOKEN }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
+      - name: Build and push securely
+        run: |
+          export DOCKER_BUILDKIT=1
+          docker build -t ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest .

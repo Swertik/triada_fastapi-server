@@ -1,53 +1,93 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
+version: "3.8"
 
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
 services:
-  server:
-    build:
-      context: .
+  fastapi:
+    image: swertik/triada_fastapi-server:latest
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     ports:
-      - 8080:8080
-    develop:
-      watch:
-        - action: rebuild
-          path: .
+      - "8080:8080"
+    environment:
+      # Здесь вы можете передать переменные окружения,
+      # например, пути к файлам секретов, если приложение само их считывает.
+      - DATABASE_URL_FILE=/run/secrets/docker_database_url
+      - GROUP_TOKEN_FILE=/run/secrets/group_token
+      - MY_TOKEN_FILE=/run/secrets/my_token
+      - REDIS_HOST=redis
+    secrets:
+      - group_token
+      - my_token
+      - docker_database_url
+      - dockerhub_password
 
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker compose up`.
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#   db:
-#     image: postgres
-#     restart: always
-#     user: postgres
-#     secrets:
-#       - db-password
-#     volumes:
-#       - db-data:/var/lib/postgresql/data
-#     environment:
-#       - POSTGRES_DB=example
-#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-#     expose:
-#       - 5432
-#     healthcheck:
-#       test: [ "CMD", "pg_isready" ]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-# volumes:
-#   db-data:
-# secrets:
-#   db-password:
-#     file: db/password.txt
+  redis:
+    image: redis:latest
+    deploy:
 
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+      POSTGRES_DB: Triada
+    volumes:
+      - pgdata:/var/lib/postgresql/17/data
+      - ./dump/Triada_26_224_167_227-2025_03_10_03_46_13-dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+    deploy:
+      replicas: 1
+    secrets:
+      - database_password
+
+  vault:
+    image: hashicorp/vault:latest
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    ports:
+      - "8200:8200"
+    deploy:
+      replicas: 1
+
+  cloudpub:
+    image: cloudpub/cloudpub:latest
+    environment:
+      - TOKEN_FILE=cloudpub_password
+    command: ["publish", "http", "host.docker.internal:8080"]  # Туннелируем localhost:8080
+    volumes:
+      - cloudpub-config:/home/cloudpub
+    restart: unless-stopped
+    secrets:
+      - cloudpub_password
+
+secrets:
+  group_token:
+    file: ./secrets/group_token
+  my_token:
+    file: ./secrets/my_token
+  database_url:
+    file: ./secrets/database_url
+  database_password:
+    file: ./secrets/database_password
+  docker_database_url:
+    file: ./secrets/docker_database_url
+  dockerhub_password:
+    file: ./secrets/dockerhub_password
+  registry-user:
+    external: true
+  registry-pass:
+    external: true
+  cloudpub_password:
+    file: ./secrets/cloudpub_password
+volumes:
+  pgdata:
+  cloudpub-config:
