@@ -38,4 +38,4 @@ COPY . .
 
 # Экспорт порта и запуск приложения
 EXPOSE 8080
-CMD uvicorn triada.main:app --host cloudpub --port 8080
+CMD uvicorn triada.main:app --host 0.0.0.0 --port 8080
