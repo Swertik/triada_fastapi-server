@@ -35,12 +35,6 @@ USER appuser
 
 # Копирование кода и настройка переменных окружения
 COPY . .
-ARG GROUP_TOKEN
-ARG MY_TOKEN
-ARG DATABASE_URL
-ENV GROUP_TOKEN=$GROUP_TOKEN
-ENV MY_TOKEN=$MY_TOKEN
-ENV DATABASE_URL=$DATABASE_URL
 
 # Экспорт порта и запуск приложения
 EXPOSE 8080
